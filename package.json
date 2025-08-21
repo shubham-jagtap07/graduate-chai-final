@@ -1,0 +1,85 @@
+{
+  "name": "graduate-chai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "analyze": "ANALYZE=true npm run build",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.1.1",
+    "framer-motion": "^10.18.0",
+    "gsap": "^3.13.0",
+    "lucide-react": "^0.539.0",
+    "next": "14.0.3",
+    "nodemailer": "^7.0.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
+    "react-intersection-observer": "^9.5.3",
+    "react-slick": "^0.29.0",
+    "slick-carousel": "^1.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.11",
+    "@types/nodemailer": "^6.4.18",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^8.48.0",
+    "eslint-config-next": "14.0.3",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "husky": "^8.0.3",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.0.2",
+    "postcss": "^8.5.6",
+    "prettier": "^3.0.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.1.6"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": [
+    ">0.3%",
+    "not dead",
+    "not op_mini all"
+  ],
+  "prettier": {
+    "endOfLine": "lf"
+  },
+  "description": "A modern, responsive website for Graduate Chai & Products built with Next.js, TypeScript, Tailwind CSS, and Framer Motion.",
+  "main": "next.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiranwagh111/Gchai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kiranwagh111/Gchai/issues"
+  },
+  "homepage": "https://github.com/kiranwagh111/Gchai#readme"
+}
