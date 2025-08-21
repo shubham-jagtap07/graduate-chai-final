@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 "use client";
 
 import { useState } from "react";
@@ -284,7 +283,6 @@ export default function FranchiseForm() {
               ))}
             </motion.div>
           </div>
-          {/* Gradient overlays for smooth fade */}
           <div className="absolute left-0 top-0 w-20 h-full bg-gradient-to-r from-amber-50 via-orange-50/30 to-transparent pointer-events-none z-10"></div>
           <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-amber-50 via-orange-50/30 to-transparent pointer-events-none z-10"></div>
         </div>

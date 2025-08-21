@@ -202,7 +202,7 @@ export default function OrderForm({
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [isOpen, initialVariant, initialQty, variantList]);
+  }, [isOpen, initialVariant, initialQty]);
 
   const validate = () => {
     const e: Partial<Record<keyof FormData, string>> = {};
@@ -230,6 +230,7 @@ export default function OrderForm({
         onClose();
       }, 2000);
     } catch (error) {
+      console.error("Order submission failed:", error);
       alert("❌ Order failed. Please try again.");
     } finally {
       setLoading(false);
