@@ -104,6 +104,7 @@ export default function Products() {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
   /* ── Handlers ── */
+  // Old flow: open in-site order form modal (kept for reference)
   const openOrderForm = useCallback((product: ProductWithDiscount) => {
     setOrderModal({
       open: true,
@@ -114,6 +115,58 @@ export default function Products() {
       weight: product.weight,
     });
   }, []);
+
+  // New flow: redirect to specific Razorpay Payment Page per product
+  const handleOrderNow = useCallback((product: ProductWithDiscount) => {
+    const productLinks: Record<string, { url: string; name: string }> = {
+      "Chai Sukh": { 
+        url: "https://pages.razorpay.com/chai-sukh",
+        name: "chai-sukh"
+      },
+      "Jaggery Premix": { 
+        url: "https://pages.razorpay.com/jaggery-premix",
+        name: "jaggery-premix"
+      },
+    };
+
+    const productInfo = productLinks[product.name];
+
+    if (productInfo) {
+      if (typeof window !== "undefined") {
+        // Create a unique reference ID for this transaction
+        const referenceId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Build the callback URL with all necessary parameters
+        const baseUrl = window.location.origin;
+        const callbackUrl = new URL('/payment-status', baseUrl);
+        
+        // Add parameters that Razorpay will send back
+        callbackUrl.searchParams.append('product', productInfo.name);
+        callbackUrl.searchParams.append('amount', product.price.toString());
+        callbackUrl.searchParams.append('reference_id', referenceId);
+        
+        // Add parameters to identify the transaction source
+        callbackUrl.searchParams.append('source', 'graduate_tea');
+        callbackUrl.searchParams.append('merchant_order_id', referenceId);
+        
+        // Build the Razorpay URL with redirect back to our status page
+        const razorpayUrl = new URL(productInfo.url);
+        razorpayUrl.searchParams.append('redirect_to', callbackUrl.toString());
+        
+        // Add callback URLs for both success and failure cases
+        razorpayUrl.searchParams.append('callback_url', callbackUrl.toString());
+        razorpayUrl.searchParams.append('cancel_url', callbackUrl.toString());
+        
+        console.log('Redirecting to Razorpay:', razorpayUrl.toString());
+        
+        // Redirect to Razorpay payment page
+        window.location.href = razorpayUrl.toString();
+      }
+    } else {
+      // Fallback to old modal flow if product not found in mapping
+      openOrderForm(product);
+    }
+  }, [openOrderForm]);
 
   const closeOrderForm = useCallback(() => {
     setOrderModal({
@@ -397,7 +450,7 @@ export default function Products() {
                     </div>
 
                     <motion.button
-                      onClick={() => openOrderForm(product)}
+                      onClick={() => handleOrderNow(product)}
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 p-4 font-bold text-white shadow-xl transition-all duration-300 hover:shadow-2xl"
@@ -466,20 +519,22 @@ export default function Products() {
           </div>
         </motion.div>
 
-        {/* Order Modal */}
-        <AnimatePresence>
-          {orderModal.open && (
-            <OrderForm
-              isOpen={orderModal.open}
-              product={orderModal.product}
-              image={orderModal.image}
-              price={orderModal.price}
-              originalPrice={orderModal.originalPrice}
-              weight={orderModal.weight}
-              onClose={closeOrderForm}
-            />
-          )}
-        </AnimatePresence>
+        {/* Order Modal (old flow) - commented out in favor of Razorpay hosted pages */}
+        {false && (
+          <AnimatePresence>
+            {orderModal.open && (
+              <OrderForm
+                isOpen={orderModal.open}
+                product={orderModal.product}
+                image={orderModal.image}
+                price={orderModal.price}
+                originalPrice={orderModal.originalPrice}
+                weight={orderModal.weight}
+                onClose={closeOrderForm}
+              />
+            )}
+          </AnimatePresence>
+        )}
       </div>
     </section>
   );
