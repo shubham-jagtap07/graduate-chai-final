@@ -166,6 +166,7 @@ export default function OrderForm({
   );
   const [step, setStep] = useState<"addr" | "pay">("addr");
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [success, setSuccess] = useState(false);
 
   const selectedProduct =
@@ -202,7 +203,7 @@ export default function OrderForm({
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [isOpen, initialVariant, initialQty]);
+  }, [isOpen, initialVariant, initialQty, variantList]);
 
   const validate = () => {
     const e: Partial<Record<keyof FormData, string>> = {};
@@ -230,6 +231,7 @@ export default function OrderForm({
         onClose();
       }, 2000);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Order submission failed:", error);
       alert("❌ Order failed. Please try again.");
     } finally {

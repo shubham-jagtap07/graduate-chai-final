@@ -4,9 +4,16 @@ import crypto from "crypto";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-function verifySignature(body: string, signature: string | null, secret: string) {
+function verifySignature(
+  body: string,
+  signature: string | null,
+  secret: string,
+) {
   if (!signature) return false;
-  const expected = crypto.createHmac("sha256", secret).update(body).digest("hex");
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(body)
+    .digest("hex");
   // Razorpay sends the signature as hex string
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 }
@@ -25,7 +32,10 @@ export async function POST(req: NextRequest) {
 
   const valid = verifySignature(rawBody, signature, secret);
   if (!valid) {
-    return NextResponse.json({ ok: false, error: "Invalid signature" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "Invalid signature" },
+      { status: 400 },
+    );
   }
 
   const payload = JSON.parse(rawBody);
