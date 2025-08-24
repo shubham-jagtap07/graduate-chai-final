@@ -30,7 +30,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
 
     try {
-      const response = await fetch('http://localhost:5001/api/auth/profile', {
+      const response = await fetch('https://gtb-aq8n.onrender.com/api/auth/profile', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 

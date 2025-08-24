@@ -57,7 +57,7 @@ export default function EditProductPage() {
     try {
       const token = localStorage.getItem("adminToken");
       // Use admin all endpoint and pick by id so inactive items work too
-      const res = await fetch("http://localhost:5001/api/products/admin/all", {
+      const res = await fetch("https://gtb-aq8n.onrender.com/api/products/admin/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -142,7 +142,7 @@ export default function EditProductPage() {
         is_popular: formData.is_popular,
       };
 
-      const res = await fetch(`http://localhost:5001/api/products/${id}`, {
+      const res = await fetch(`https://gtb-aq8n.onrender.com/api/products/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

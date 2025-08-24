@@ -226,7 +226,7 @@ export default function OrderForm({
     try {
       const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL as string) ||
         (typeof window !== 'undefined' ? (window as any).BACKEND_URL : null) ||
-        'http://localhost:5001';
+        'https://gtb-aq8n.onrender.com';
 
       const payload = {
         name: form.name,

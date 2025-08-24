@@ -25,7 +25,7 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('http://localhost:5001/api/products/admin/all', {
+      const response = await fetch('https://gtb-aq8n.onrender.com/api/products/admin/all', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
 
       // Try to get orders summary if backend provides it
       try {
-        const ordRes = await fetch('http://localhost:5001/api/orders/summary', {
+        const ordRes = await fetch('https://gtb-aq8n.onrender.com/api/orders/summary', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (ordRes.ok) {
