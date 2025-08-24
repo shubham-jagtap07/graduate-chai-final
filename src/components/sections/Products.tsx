@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import Image from "next/image";
@@ -13,14 +13,17 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  originalPrice: number;
-  image: string;
-  popular: boolean;
+  original_price: number;
+  image_url: string;
+  is_popular: boolean;
   weight: string;
   features: string[];
   rating: number;
   reviews: number;
   tags: string[];
+  category: string;
+  stock_quantity: number;
+  is_active: boolean;
 }
 
 interface ProductWithDiscount extends Product {
@@ -39,42 +42,77 @@ interface OrderModalState {
 
 /* ─────────────────── Component ─────────────────── */
 export default function Products() {
-  /* ── Raw data ── */
-  const rawProducts: Product[] = useMemo(
-    () => [
-      {
-        id: 1,
-        name: "Chai Sukh",
-        description:
-          "Premium jaggery-sweetened blend crafted with finest tea leaves and pure gur for an authentic taste experience.",
-        price: 225,
-        originalPrice: 250,
-        image: "/images/gram500.webp",
-        popular: true,
-        weight: "500g",
-        features: ["Natural Jaggery", "Premium Quality", "Rich Flavor"],
-        rating: 4.8,
-        reviews: 156,
-        tags: ["Bestseller", "Organic"],
-      },
-      {
-        id: 2,
-        name: "Jaggery Premix",
-        description:
-          "Signature premix delivering rich aroma and authentic taste in every cup. Perfect blend for tea connoisseurs.",
-        price: 320,
-        originalPrice: 400,
-        image: "/images/gram900.webp",
-        popular: true,
-        weight: "900g",
-        features: ["Premium Blend", "Rich Aroma", "Perfect Taste"],
-        rating: 4.9,
-        reviews: 203,
-        tags: ["Large Pack", "Value"],
-      },
-    ],
-    [],
-  );
+  /* ── State for API data ── */
+  const [rawProducts, setRawProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  /* ── Fetch products from API ── */
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:5001/api/products');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          setRawProducts(result.data);
+        } else {
+          throw new Error(result.message || 'Failed to load products');
+        }
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load products');
+        
+        // Fallback to static data if API fails
+        setRawProducts([
+          {
+            id: 1,
+            name: "Chai Sukh",
+            description: "Premium jaggery-sweetened blend crafted with finest tea leaves and pure gur for an authentic taste experience.",
+            price: 225,
+            original_price: 250,
+            image_url: "/images/gram500.webp",
+            is_popular: true,
+            weight: "500g",
+            features: ["Natural Jaggery", "Premium Quality", "Rich Flavor"],
+            rating: 4.8,
+            reviews: 156,
+            tags: ["Bestseller", "Organic"],
+            category: "Chai Powder",
+            stock_quantity: 45,
+            is_active: true,
+          },
+          {
+            id: 2,
+            name: "Jaggery Premix",
+            description: "Signature premix delivering rich aroma and authentic taste in every cup. Perfect blend for tea connoisseurs.",
+            price: 320,
+            original_price: 400,
+            image_url: "/images/gram900.webp",
+            is_popular: true,
+            weight: "900g",
+            features: ["Premium Blend", "Rich Aroma", "Perfect Taste"],
+            rating: 4.9,
+            reviews: 203,
+            tags: ["Large Pack", "Value"],
+            category: "Chai Powder",
+            stock_quantity: 32,
+            is_active: true,
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   /* ── Derived data ── */
   const products: ProductWithDiscount[] = useMemo(
@@ -82,9 +120,9 @@ export default function Products() {
       rawProducts.map((p) => ({
         ...p,
         discountPercent: Math.round(
-          ((p.originalPrice - p.price) / p.originalPrice) * 100,
+          ((p.original_price - p.price) / p.original_price) * 100,
         ),
-        savings: p.originalPrice - p.price,
+        savings: p.original_price - p.price,
       })),
     [rawProducts],
   );
@@ -109,9 +147,9 @@ export default function Products() {
     setOrderModal({
       open: true,
       product: product.name,
-      image: product.image,
+      image: product.image_url,
       price: product.price,
-      originalPrice: product.originalPrice,
+      originalPrice: product.original_price,
       weight: product.weight,
     });
   }, []);
@@ -329,13 +367,34 @@ export default function Products() {
           </motion.div>
         </SectionTransition>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center gap-3 text-amber-600">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+              <span className="text-lg font-medium">Loading our premium products...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center py-20">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+              <p className="text-red-600 font-medium">Failed to load products</p>
+              <p className="text-red-500 text-sm mt-2">Using fallback data</p>
+            </div>
+          </div>
+        )}
+
         {/* Enhanced Product Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
-          className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12"
-        >
+        {!loading && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
+            className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12"
+          >
           {products.map((product, idx) => (
             <motion.div
               key={product.id}
@@ -359,7 +418,7 @@ export default function Products() {
                       className="relative h-full w-full"
                     >
                       <Image
-                        src={product.image}
+                        src={product.image_url}
                         alt={`${product.name} package`}
                         fill
                         priority={idx < 2}
@@ -452,7 +511,7 @@ export default function Products() {
                             ₹{product.price.toLocaleString()}
                           </span>
                           <span className="text-xl text-gray-400 line-through">
-                            ₹{product.originalPrice.toLocaleString()}
+                            ₹{product.original_price.toLocaleString()}
                           </span>
                         </div>
                         <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
@@ -505,48 +564,49 @@ export default function Products() {
               </article>
             </motion.div>
           ))}
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Call to Action Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          className="mt-20 text-center"
-        >
-          <div className="mx-auto max-w-2xl rounded-3xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 p-8 text-white shadow-2xl">
-            <h3 className="mb-4 text-2xl font-bold">
-              Can't decide? Try our bestseller combo!
-            </h3>
-            <p className="mb-6 text-amber-100">
-              Get both products at a special bundle price
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="rounded-full bg-white px-8 py-3 font-bold text-amber-600 shadow-lg transition-all hover:shadow-xl"
-            >
-              View Bundle Offers
-            </motion.button>
-          </div>
-        </motion.div>
-
-        {/* Order Modal (old flow) - commented out in favor of Razorpay hosted pages */}
-        {false && (
-          <AnimatePresence>
-            {orderModal.open && (
-              <OrderForm
-                isOpen={orderModal.open}
-                product={orderModal.product}
-                image={orderModal.image}
-                price={orderModal.price}
-                originalPrice={orderModal.originalPrice}
-                weight={orderModal.weight}
-                onClose={closeOrderForm}
-              />
-            )}
-          </AnimatePresence>
+        {!loading && (
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="mt-20 text-center"
+          >
+            <div className="mx-auto max-w-2xl rounded-3xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 p-8 text-white shadow-2xl">
+              <h3 className="mb-4 text-2xl font-bold">
+                Can't decide? Try our bestseller combo!
+              </h3>
+              <p className="mb-6 text-amber-100">
+                Get both products at a special bundle price
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="rounded-full bg-white px-8 py-3 font-bold text-amber-600 shadow-lg transition-all hover:shadow-xl"
+              >
+                View Bundle Offers
+              </motion.button>
+            </div>
+          </motion.div>
         )}
+
+        {/* Order Modal (fallback flow for products without Razorpay mapping) */}
+        <AnimatePresence>
+          {orderModal.open && (
+            <OrderForm
+              isOpen={orderModal.open}
+              product={orderModal.product}
+              image={orderModal.image}
+              price={orderModal.price}
+              originalPrice={orderModal.originalPrice}
+              weight={orderModal.weight}
+              onClose={closeOrderForm}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );

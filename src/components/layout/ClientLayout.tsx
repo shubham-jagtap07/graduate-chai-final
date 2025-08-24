@@ -20,15 +20,17 @@ export default function ClientLayout({
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
-    // show popup whenever route changes
-    setShowPopup(true);
+    // show popup whenever route changes on non-admin pages
+    const isAdmin = pathname?.startsWith("/admin");
+    setShowPopup(!isAdmin);
   }, [pathname]);
 
   return (
     <>
       <ThemeProvider>
         <div className="relative flex min-h-screen flex-col">
-          <Header />
+          {/* Hide public site chrome on admin routes */}
+          {!pathname?.startsWith("/admin") && <Header />}
           <main
             id="main-content"
             role="main"
@@ -36,18 +38,20 @@ export default function ClientLayout({
           >
             {children}
           </main>
-          <Footer />
-          <FloatingActions />
-          <StickyActions
-            position="bottom"
-            franchiseHref="/franchise"
-            productHref="/products"
-          />
+          {!pathname?.startsWith("/admin") && <Footer />}
+          {!pathname?.startsWith("/admin") && <FloatingActions />}
+          {!pathname?.startsWith("/admin") && (
+            <StickyActions
+              position="bottom"
+              franchiseHref="/franchise"
+              productHref="/products"
+            />
+          )}
         </div>
       </ThemeProvider>
 
       {/* Popup Form */}
-      {showPopup && (
+      {showPopup && !pathname?.startsWith("/admin") && (
         <PopupForm
           onClose={() => setShowPopup(false)} // close only when user clicks close
         />

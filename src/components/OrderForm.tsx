@@ -224,7 +224,41 @@ export default function OrderForm({
     setLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL as string) ||
+        (typeof window !== 'undefined' ? (window as any).BACKEND_URL : null) ||
+        'http://localhost:5001';
+
+      const payload = {
+        name: form.name,
+        phone: form.phone,
+        street: form.street,
+        landmark: form.landmark,
+        city: form.city,
+        taluka: form.taluka,
+        district: form.district,
+        state: form.state,
+        pincode: form.pincode,
+        product,
+        image: image,
+        image2: image, // duplicate for now; can be replaced with another URL
+        weight: selectedProduct?.weight || weight,
+        price: currentPrice,
+        qty: form.qty,
+        payment: form.payment,
+        total: breakdown.total,
+      };
+
+      const res = await fetch(`${API_BASE}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || 'Failed to place order');
+      }
+
       alert("🎉 Order Placed Successfully! We'll contact you within 24 hours.");
       setSuccess(true);
       setTimeout(() => {

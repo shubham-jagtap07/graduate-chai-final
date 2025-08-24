@@ -21,6 +21,7 @@ const navLinks: readonly NavLink[] = [
   { name: "Blog", href: "/blog" },
   { name: "News & Events", href: "/news&events" },
   { name: "Contact Us", href: "/contact" },
+  { name: "Admin Login", href: "/admin" },
 ];
 
 export default function Header() {
