@@ -98,6 +98,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, url, asset_id: json.asset_id, public_id: json.public_id });
     }
 
+    // If we're in production and Cloudinary isn't configured, fail fast with a helpful error
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'Cloudinary is not configured on the server. Set CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME + CLOUDINARY_UPLOAD_PRESET (and optional CLOUDINARY_UPLOAD_FOLDER).',
+        },
+        { status: 500 },
+      );
+    }
+
     // Development fallback: write to local filesystem
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
