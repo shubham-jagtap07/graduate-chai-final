@@ -15,48 +15,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
 
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    const token = localStorage.getItem('adminToken');
-    
-    if (!token) {
-      if (pathname !== '/admin/login') {
-        router.push('/admin/login');
-      }
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch('https://gtb-aq8n.onrender.com/api/auth/profile', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setIsAuthenticated(true);
-        setAdminName(result.data.name);
-        if (pathname === '/admin/login') {
-          router.push('/admin');
-        }
-      } else {
-        localStorage.removeItem('adminToken');
-        router.push('/admin/login');
-      }
-    } catch (error) {
-      localStorage.removeItem('adminToken');
-      router.push('/admin/login');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // No token/auth check needed anymore
+    setIsAuthenticated(true);
+    setAdminName('Admin');
+    setLoading(false);
+  }, [pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
     setIsAuthenticated(false);
-    router.push('/admin/login');
+    router.replace('/admin/login');
   };
 
   if (loading) {

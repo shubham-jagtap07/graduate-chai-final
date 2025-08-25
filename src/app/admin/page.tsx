@@ -24,13 +24,12 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
-      const response = await fetch('https://gtb-aq8n.onrender.com/api/products/admin/all', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      console.log('[AdminDashboard] Fetching products...');
+      const response = await fetch('https://gtb-aq8n.onrender.com/api/products/admin/all');
 
       if (response.ok) {
         const result = await response.json();
+        console.log('[AdminDashboard] Products data:', result);
         const products = result.data || [];
         
         setStats(prev => ({
@@ -38,13 +37,13 @@ export default function AdminDashboard() {
           totalProducts: products.length,
           activeProducts: products.filter((p: any) => p.is_active).length
         }));
+      } else {
+        console.error('[AdminDashboard] Failed to fetch products:', response.status, response.statusText);
       }
 
       // Try to get orders summary if backend provides it
       try {
-        const ordRes = await fetch('https://gtb-aq8n.onrender.com/api/orders/summary', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const ordRes = await fetch('https://gtb-aq8n.onrender.com/api/orders/summary');
         if (ordRes.ok) {
           const ordJson = await ordRes.json();
           // Expecting { success: boolean, data: { totalOrders: number, revenue: number } }
