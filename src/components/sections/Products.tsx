@@ -137,6 +137,21 @@ export default function Products() {
     weight: "",
   });
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [imgErrorIds, setImgErrorIds] = useState<Record<number, boolean>>({});
+
+  // Normalize potentially malformed image URLs from API
+  const normalizeUrl = useCallback((u: string): string => {
+    if (!u) return "/images/gram500.webp";
+    let url = u.trim();
+    // If already absolute http(s), return as-is
+    if (/^https?:\/\//i.test(url)) return url;
+    // Ensure leading slash for relative paths
+    if (!url.startsWith("/")) url = `/${url}`;
+    // Common cases: "images/..." -> "/images/..."
+    if (url.startsWith("/images/")) return url;
+    // Fallback to treating it as inside public/images
+    return `/images${url}`;
+  }, []);
 
   /* ── Intersection observer ── */
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
@@ -418,13 +433,14 @@ export default function Products() {
                       className="relative h-full w-full"
                     >
                       <Image
-                        src={product.image_url}
+                        src={imgErrorIds[product.id] ? "/images/gram500.webp" : normalizeUrl(product.image_url)}
                         alt={`${product.name} package`}
                         fill
                         priority={idx < 2}
                         quality={95}
                         sizes="(max-width: 1024px) 90vw, 45vw"
                         className="object-contain drop-shadow-2xl"
+                        onError={() => setImgErrorIds((s) => ({ ...s, [product.id]: true }))}
                       />
                     </motion.div>
                   </div>
