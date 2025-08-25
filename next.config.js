@@ -14,6 +14,12 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "graduatechai.in",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "share.google",
         port: "",
         pathname: "/**",
@@ -21,6 +27,12 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "gtbackend-1-pnnq.onrender.com",
         port: "",
         pathname: "/**",
       },
