@@ -31,6 +31,7 @@ export default function NewProductPage() {
 
     try {
       const token = localStorage.getItem('adminToken');
+      const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gtbackend-1-pnnq.onrender.com';
       
       // Prepare data
       const productData = {
@@ -42,7 +43,7 @@ export default function NewProductPage() {
         tags: formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(t => t) : []
       };
 
-      const response = await fetch('https://gtbackend-1-pnnq.onrender.com/api/products', {
+      const response = await fetch(`${API_BASE}/api/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -262,105 +263,105 @@ export default function NewProductPage() {
                   type="text"
                   id="image_url"
                   name="image_url"
-                  readOnly
                   value={formData.image_url}
-                  className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded bg-gray-50"
+                  readOnly
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
                 />
               </div>
             )}
-            <p className="text-xs text-gray-500 mt-2">Images are saved to /public/images and served at /images/...</p>
+            <p className="text-xs text-gray-500 mt-2">Images are uploaded to Cloudinary when configured, otherwise stored locally during development.</p>
           </div>
 
-          {/* Description */}
+        {/* Description */}
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            Description *
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            required
+            rows={4}
+            value={formData.description}
+            onChange={handleChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors resize-vertical"
+            placeholder="Describe your product - ingredients, taste, benefits, etc."
+          />
+        </div>
+
+        {/* Features and Tags */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-              Product Description *
+            <label htmlFor="features" className="block text-sm font-medium text-gray-700 mb-2">
+              Features (comma separated)
             </label>
-            <textarea
-              id="description"
-              name="description"
-              required
-              rows={4}
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors resize-vertical"
-              placeholder="Describe your product - ingredients, taste, benefits, etc."
-            />
-          </div>
-
-          {/* Features and Tags */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="features" className="block text-sm font-medium text-gray-700 mb-2">
-                Features (comma separated)
-              </label>
-              <input
-                type="text"
-                id="features"
-                name="features"
-                value={formData.features}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
-                placeholder="Natural Jaggery, Premium Quality, Rich Flavor"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
-                Tags (comma separated)
-              </label>
-              <input
-                type="text"
-                id="tags"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
-                placeholder="Bestseller, Organic"
-              />
-            </div>
-          </div>
-
-          {/* Popular Product Checkbox */}
-          <div className="flex items-center">
             <input
-              type="checkbox"
-              id="is_popular"
-              name="is_popular"
-              checked={formData.is_popular}
+              type="text"
+              id="features"
+              name="features"
+              value={formData.features}
               onChange={handleChange}
-              className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+              placeholder="Natural Jaggery, Premium Quality, Rich Flavor"
             />
-            <label htmlFor="is_popular" className="ml-2 block text-sm text-gray-900">
-              Mark as Popular Product
-            </label>
           </div>
 
-          {/* Submit Button */}
-          <div className="flex gap-4 pt-6">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-3 rounded-lg font-medium hover:from-amber-600 hover:to-orange-600 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Creating...
-                </div>
-              ) : (
-                '🚀 Create Product'
-              )}
-            </button>
-            
-            <Link
-              href="/admin/products"
-              className="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-            >
-              Cancel
-            </Link>
+          <div>
+            <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
+              Tags (comma separated)
+            </label>
+            <input
+              type="text"
+              id="tags"
+              name="tags"
+              value={formData.tags}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+              placeholder="Bestseller, Organic"
+            />
           </div>
-        </form>
+        </div>
+
+        {/* Popular Product Checkbox */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="is_popular"
+            name="is_popular"
+            checked={formData.is_popular}
+            onChange={handleChange}
+            className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+          />
+          <label htmlFor="is_popular" className="ml-2 block text-sm text-gray-900">
+            Mark as Popular Product
+          </label>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex gap-4 pt-6">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-3 rounded-lg font-medium hover:from-amber-600 hover:to-orange-600 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Creating...
+              </div>
+            ) : (
+              ' Create Product'
+            )}
+          </button>
+          
+          <Link
+            href="/admin/products"
+            className="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+          >
+            Cancel
+          </Link>
+        </div>
+      </form>
       </div>
     </div>
   );

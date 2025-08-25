@@ -143,7 +143,11 @@ export default function OrderForm({
   initialVariant,
   initialQty,
 }: OrderFormProps) {
-  const variantList = variants ?? getDefaultOptions(product, price, weight);
+  // Memoize to avoid creating a new array each render when variants is undefined
+  const variantList = useMemo(
+    () => variants ?? getDefaultOptions(product, price, weight),
+    [variants, product, price, weight],
+  );
 
   const [lang, setLang] = useState<Lang>("en");
   const t = T[lang];

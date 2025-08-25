@@ -159,9 +159,16 @@ export default function Network() {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="flex flex-col md:flex-row items-center gap-8 lg:gap-12 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-900/20 dark:via-orange-900/10 rounded-3xl shadow-2xl border-2 border-amber-200/60 dark:border-amber-700/40 p-8 md:p-12 relative overflow-hidden"
           >
-            {/* Enhanced Decorative grid background */}
+            {/* Enhanced Decorative grid background (CSS pattern to avoid external asset) */}
             <div className="absolute inset-0 pointer-events-none opacity-10">
-              <div className="w-full h-full bg-[url('/images/grid.svg')] bg-repeat" />
+              <div
+                className="w-full h-full"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(rgba(0,0,0,0.15) 1px, transparent 1px)",
+                  backgroundSize: "16px 16px",
+                }}
+              />
             </div>
 
             {/* Enhanced Left: Text Content */}
@@ -248,11 +255,7 @@ export default function Network() {
             <div className="w-full md:w-1/2 flex justify-center items-center">
               <div className="w-full max-w-[350px] md:max-w-[400px] lg:max-w-[420px]">
                 <div className="relative w-full h-[280px] md:h-[320px] lg:h-[360px] overflow-hidden rounded-2xl shadow-lg">
-                  <audio
-                    id="network-audio"
-                    src="/audio/network-ai.mp3"
-                    preload="auto"
-                  />
+                  {/* Audio removed to prevent 404 when file is absent */}
 
                   {/* Static overlay - no animation */}
                   <div className="absolute inset-0 bg-gradient-to-br from-amber-100/30 to-orange-100/20 z-10 pointer-events-none" />
@@ -337,7 +340,7 @@ export default function Network() {
             transition={{ duration: 0.7, delay: 0.7 }}
             className="relative mt-16 w-full flex flex-col items-center justify-center py-16 px-4 md:px-8 rounded-3xl overflow-hidden"
             style={{
-              backgroundImage: "url(/images/cta-bg.jpg)",
+              backgroundImage: "url(/images/network.jpeg)",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}

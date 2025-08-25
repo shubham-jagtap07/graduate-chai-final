@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import path from 'path';
 import { promises as fs } from 'fs';
+import crypto from 'crypto';
 
 export const runtime = 'nodejs';
 
@@ -15,6 +16,58 @@ export async function POST(req: Request) {
 
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET; // unsigned preset recommended
+
+    // Prefer signed uploads when CLOUDINARY_URL is provided
+    const cloudinaryUrl = process.env.CLOUDINARY_URL; // cloudinary://<api_key>:<api_secret>@<cloud_name>
+    if (cloudinaryUrl) {
+      try {
+        const match = cloudinaryUrl.match(/^cloudinary:\/\/([^:]+):([^@]+)@([^/]+)$/);
+        if (!match) throw new Error('Invalid CLOUDINARY_URL format');
+        const [, apiKey, apiSecret, urlCloudName] = match;
+        const useCloud = cloudName || urlCloudName;
+        const timestamp = Math.floor(Date.now() / 1000);
+        const folder = process.env.CLOUDINARY_UPLOAD_FOLDER || '';
+
+        // Build signature string per Cloudinary spec: sorted params concatenated with api_secret
+        // Params we sign: folder (if provided) and timestamp
+        const toSign = [
+          folder ? `folder=${folder}` : '',
+          `timestamp=${timestamp}`,
+        ]
+          .filter(Boolean)
+          .join('&');
+        const signature = crypto
+          .createHash('sha1')
+          .update(`${toSign}${apiSecret}`)
+          .digest('hex');
+
+        const cloudUrl = `https://api.cloudinary.com/v1_1/${useCloud}/image/upload`;
+        const body = new FormData();
+        body.append('file', file);
+        body.append('timestamp', String(timestamp));
+        body.append('api_key', apiKey);
+        body.append('signature', signature);
+        if (folder) body.append('folder', folder);
+
+        const res = await fetch(cloudUrl, { method: 'POST', body });
+        const json = await res.json();
+        if (!res.ok) {
+          console.error('Cloudinary (signed) upload error:', json);
+          return NextResponse.json(
+            { success: false, message: json?.error?.message || 'Upload failed' },
+            { status: 502 }
+          );
+        }
+        const url = json.secure_url || json.url;
+        if (!url) {
+          return NextResponse.json({ success: false, message: 'Upload failed: no URL returned' }, { status: 502 });
+        }
+        return NextResponse.json({ success: true, url, asset_id: json.asset_id, public_id: json.public_id });
+      } catch (e) {
+        console.error('Signed upload path failed, falling back to unsigned/local:', e);
+        // continue to unsigned or local below
+      }
+    }
 
     if (cloudName && uploadPreset) {
       // Forward to Cloudinary unsigned upload API
@@ -63,11 +116,14 @@ export async function POST(req: Request) {
     const filePath = path.join(uploadsDir, fileName);
     await fs.writeFile(filePath, buffer);
 
-    const url = `/images/${fileName}`;
+    // Build absolute URL using the request origin to avoid confusion when clients run on a different domain/port
+    const origin = new URL(req.url).origin;
+    const url = `${origin}/images/${fileName}`;
     return NextResponse.json({ success: true, url, fileName });
   } catch (err) {
     console.error('Upload error:', err);
     return NextResponse.json({ success: false, message: 'Upload failed' }, { status: 500 });
   }
 }
+
 
