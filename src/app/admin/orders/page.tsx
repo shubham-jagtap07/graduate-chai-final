@@ -23,7 +23,7 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "https://gtb-aq8n.onrender.com";
+    const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "https://gtbackend-1-pnnq.onrender.com";
     const fetchOrders = async () => {
       try {
         const res = await fetch(`${API_BASE}/api/orders`);

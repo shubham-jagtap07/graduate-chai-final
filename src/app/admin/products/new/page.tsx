@@ -42,7 +42,7 @@ export default function NewProductPage() {
         tags: formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(t => t) : []
       };
 
-      const response = await fetch('https://gtb-aq8n.onrender.com/api/products', {
+      const response = await fetch('https://gtbackend-1-pnnq.onrender.com/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

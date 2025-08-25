@@ -19,9 +19,9 @@ export default function AdminLogin() {
 
     try {
       console.groupCollapsed('[AdminLogin] submit');
-      console.log('Request URL:', 'https://gtb-aq8n.onrender.com/api/auth/login');
+      console.log('Request URL:', 'https://gtbackend-1-pnnq.onrender.com/api/auth/login');
       console.log('Request body:', { email: formData.email, passwordLen: formData.password?.length });
-      const response = await fetch('https://gtb-aq8n.onrender.com/api/auth/login', {
+      const response = await fetch('https://gtbackend-1-pnnq.onrender.com/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

@@ -52,7 +52,7 @@ export default function Products() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch('https://gtb-aq8n.onrender.com/api/products');
+        const response = await fetch('https://gtbackend-1-pnnq.onrender.com/api/products');
         
         if (!response.ok) {
           throw new Error('Failed to fetch products');

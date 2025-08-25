@@ -30,7 +30,7 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('https://gtb-aq8n.onrender.com/api/products/admin/all', {
+      const response = await fetch('https://gtbackend-1-pnnq.onrender.com/api/products/admin/all', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -52,7 +52,7 @@ export default function ProductsPage() {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`https://gtb-aq8n.onrender.com/api/products/${id}`, {
+      const response = await fetch(`https://gtbackend-1-pnnq.onrender.com/api/products/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
