@@ -83,7 +83,7 @@ export default function AdminLogin() {
                 autoComplete="username"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors text-gray-900 placeholder-gray-400 bg-white dark:bg-gray-800 dark:text-white"
                 placeholder="xyz@chaiwala.com"
               />
             </div>
@@ -100,7 +100,7 @@ export default function AdminLogin() {
                 autoComplete="current-password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors text-gray-900 placeholder-gray-400 bg-white dark:bg-gray-800 dark:text-white"
                 placeholder="Enter your password"
               />
             </div>
