@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // Target backend URL. Prefer BACKEND_URL (server-side only) and fallback to NEXT_PUBLIC_BACKEND_URL.
 const BACKEND_BASE = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
@@ -6,6 +8,16 @@ const BACKEND_BASE = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_
 async function proxy(req: NextRequest, { params }: { params: { path: string[] } }) {
   const targetPath = params.path?.join('/') || '';
   const url = `${BACKEND_BASE}/api/${targetPath}`;
+  const isProd = process.env.NODE_ENV === 'production';
+  if (isProd && /localhost|127\.0\.0\.1/.test(BACKEND_BASE)) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Server proxy misconfigured: BACKEND_URL must be a public URL in production.',
+      },
+      { status: 500 }
+    );
+  }
 
   const init: RequestInit = {
     method: req.method,
@@ -40,6 +52,8 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
   // Ensure host header matches target
   const h = new Headers(req.headers);
   h.delete('host');
+  // Avoid upstream compression mismatches
+  h.set('accept-encoding', 'identity');
   init.headers = h;
 
   try {
@@ -64,7 +78,7 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     return new NextResponse(text, { status: resp.status, headers: resHeaders });
   } catch (error: any) {
     const message = error?.message || 'Proxy error';
-    return NextResponse.json({ success: false, message }, { status: 502 });
+    return NextResponse.json({ success: false, message, target: url }, { status: 502 });
   }
 }
 
