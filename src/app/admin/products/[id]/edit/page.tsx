@@ -56,9 +56,8 @@ export default function EditProductPage() {
   async function loadProduct() {
     try {
       const token = localStorage.getItem("adminToken");
-      const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gtbackend-1-pnnq.onrender.com';
       // Use admin all endpoint and pick by id so inactive items work too
-      const res = await fetch(`${API_BASE}/api/products/admin/all`, {
+      const res = await fetch(`/api/backend/products/admin/all`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -143,8 +142,7 @@ export default function EditProductPage() {
         is_popular: formData.is_popular,
       };
 
-      const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gtbackend-1-pnnq.onrender.com';
-      const res = await fetch(`${API_BASE}/api/products/${id}`, {
+      const res = await fetch(`/api/backend/products/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

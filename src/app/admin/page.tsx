@@ -25,8 +25,7 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       console.log('[AdminDashboard] Fetching products...');
-      const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gtbackend-1-pnnq.onrender.com';
-      const response = await fetch(`${API_BASE}/api/products/admin/all`);
+      const response = await fetch(`/api/backend/products/admin/all`);
 
       if (response.ok) {
         const result = await response.json();
@@ -44,7 +43,7 @@ export default function AdminDashboard() {
 
       // Try to get orders summary if backend provides it
       try {
-        const ordRes = await fetch(`${API_BASE}/api/orders/summary`);
+        const ordRes = await fetch(`/api/backend/orders/summary`);
         if (ordRes.ok) {
           const ordJson = await ordRes.json();
           // Expecting { success: boolean, data: { totalOrders: number, revenue: number } }

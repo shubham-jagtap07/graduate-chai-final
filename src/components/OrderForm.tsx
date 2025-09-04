@@ -228,9 +228,6 @@ export default function OrderForm({
     setLoading(true);
 
     try {
-      const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL as string) ||
-        (typeof window !== 'undefined' ? (window as any).BACKEND_URL : null) ||
-        'https://gtbackend-1-pnnq.onrender.com';
 
       const payload = {
         name: form.name,
@@ -252,7 +249,7 @@ export default function OrderForm({
         total: breakdown.total,
       };
 
-      const res = await fetch(`${API_BASE}/api/orders`, {
+      const res = await fetch(`/api/backend/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

@@ -18,7 +18,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const checkAuth = async () => {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
-        const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
 
         // If no token and not already on login page -> redirect
         if (!token) {
@@ -29,8 +28,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           return;
         }
 
-        // Validate token by calling backend profile endpoint
-        const res = await fetch(`${API_BASE}/api/auth/profile`, {
+        // Validate token by calling proxy profile endpoint
+        const res = await fetch(`/api/backend/auth/profile`, {
           headers: {
             Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
           },

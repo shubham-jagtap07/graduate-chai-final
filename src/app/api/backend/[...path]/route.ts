@@ -67,6 +67,9 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     resHeaders.delete('content-length');
     // Allow cookies/credentials to flow if backend sets them
     resHeaders.set('access-control-expose-headers', '*');
+    // Debug headers to help diagnose proxy issues in Network tab
+    resHeaders.set('x-proxy-target', url);
+    resHeaders.set('x-proxy-backend-base', BACKEND_BASE);
 
     const contentType = resp.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
@@ -78,7 +81,11 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     return new NextResponse(text, { status: resp.status, headers: resHeaders });
   } catch (error: any) {
     const message = error?.message || 'Proxy error';
-    return NextResponse.json({ success: false, message, target: url }, { status: 502 });
+    const errHeaders = new Headers();
+    errHeaders.set('x-proxy-target', url);
+    errHeaders.set('x-proxy-backend-base', BACKEND_BASE);
+    errHeaders.set('access-control-expose-headers', '*');
+    return NextResponse.json({ success: false, message, target: url }, { status: 502, headers: errHeaders });
   }
 }
 

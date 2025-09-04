@@ -31,7 +31,6 @@ export default function NewProductPage() {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gtbackend-1-pnnq.onrender.com';
       
       // Prepare data
       const productData = {
@@ -43,7 +42,7 @@ export default function NewProductPage() {
         tags: formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(t => t) : []
       };
 
-      const response = await fetch(`${API_BASE}/api/products`, {
+      const response = await fetch(`/api/backend/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

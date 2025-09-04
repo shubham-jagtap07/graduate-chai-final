@@ -23,10 +23,9 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "https://gtbackend-1-pnnq.onrender.com";
     const fetchOrders = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/orders`);
+        const res = await fetch(`/api/backend/orders`);
         const json = await res.json();
         if (!res.ok || !json?.success) throw new Error(json?.message || "Failed to load orders");
         setOrders(Array.isArray(json.data) ? json.data : []);
