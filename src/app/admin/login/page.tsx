@@ -18,14 +18,26 @@ export default function AdminLogin() {
     setError('');
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
+      // Use internal proxy to avoid CORS/localhost issues on mobile
+      const response = await fetch(`/api/backend/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
-      const result = await response.json();
+      let result: any = null;
+      const text = await response.text();
+      try {
+        result = text ? JSON.parse(text) : null;
+      } catch {
+        // Non-JSON response
+        result = null;
+      }
+
+      if (!response.ok) {
+        const msg = result?.message || `Login failed (${response.status})`;
+        throw new Error(msg);
+      }
 
       if (result.success && result.data && result.data.token) {
         // Store raw token; layout will prefix with Bearer when sending
@@ -36,10 +48,10 @@ export default function AdminLogin() {
         // Use replace to avoid navigating back to login with back button
         router.replace('/admin');
       } else {
-        setError(result.message || 'Login failed');
+        setError(result?.message || 'Login failed');
       }
-    } catch (err) {
-      setError('Network error. Please try again.');
+    } catch (err: any) {
+      setError(err?.message || 'Network error. Please try again.');
     } finally {
       setLoading(false);
     }

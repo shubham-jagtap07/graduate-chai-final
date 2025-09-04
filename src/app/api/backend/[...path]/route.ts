@@ -1,0 +1,67 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+// Target backend URL. Prefer BACKEND_URL (server-side only) and fallback to NEXT_PUBLIC_BACKEND_URL.
+const BACKEND_BASE = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
+
+async function proxy(req: NextRequest, { params }: { params: { path: string[] } }) {
+  const targetPath = params.path?.join('/') || '';
+  const url = `${BACKEND_BASE}/api/${targetPath}`;
+
+  const init: RequestInit = {
+    method: req.method,
+    redirect: 'manual',
+  };
+
+  // Forward body only for methods that can have a body
+  const method = req.method?.toUpperCase();
+  if (method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const contentType = req.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const body = await req.json().catch(() => null);
+      init.body = body ? JSON.stringify(body) : undefined;
+    } else if (contentType.includes('application/x-www-form-urlencoded')) {
+      const formData = await req.formData().catch(() => null);
+      if (formData) {
+        const params = new URLSearchParams();
+        formData.forEach((v, k) => params.append(k, String(v)));
+        init.body = params;
+      }
+    } else if (contentType.includes('multipart/form-data')) {
+      const formData = await req.formData().catch(() => null);
+      if (formData) {
+        init.body = formData as any;
+      }
+    } else {
+      const text = await req.text().catch(() => null);
+      init.body = text ?? undefined;
+    }
+  }
+
+  // Ensure host header matches target
+  const h = new Headers(req.headers);
+  h.delete('host');
+  init.headers = h;
+
+  try {
+    const resp = await fetch(url, init);
+
+    // Stream response back with same status and headers
+    const resHeaders = new Headers(resp.headers);
+    // Allow cookies/credentials to flow if backend sets them
+    resHeaders.set('access-control-expose-headers', '*');
+
+    const contentType = resp.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await resp.json().catch(() => null);
+      return NextResponse.json(data, { status: resp.status, headers: resHeaders });
+    }
+
+    const text = await resp.text();
+    return new NextResponse(text, { status: resp.status, headers: resHeaders });
+  } catch (error: any) {
+    const message = error?.message || 'Proxy error';
+    return NextResponse.json({ success: false, message }, { status: 502 });
+  }
+}
+
+export { proxy as GET, proxy as POST, proxy as PUT, proxy as PATCH, proxy as DELETE };
