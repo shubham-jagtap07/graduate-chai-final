@@ -47,6 +47,10 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
 
     // Stream response back with same status and headers
     const resHeaders = new Headers(resp.headers);
+    // Remove encoding/length headers because we're reserializing the body
+    resHeaders.delete('content-encoding');
+    resHeaders.delete('transfer-encoding');
+    resHeaders.delete('content-length');
     // Allow cookies/credentials to flow if backend sets them
     resHeaders.set('access-control-expose-headers', '*');
 
