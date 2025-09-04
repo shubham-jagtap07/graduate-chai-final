@@ -18,39 +18,85 @@ export default function AdminLogin() {
     setError('');
 
     try {
-      // Use internal proxy to avoid CORS/localhost issues on mobile
+      console.log('[LOGIN] Attempting login with:', { email: formData.email });
+      
       const response = await fetch(`/api/backend/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        },
+        cache: 'no-store',
         body: JSON.stringify(formData)
       });
 
+      console.log('[LOGIN] Response status:', response.status);
+      console.log('[LOGIN] Response headers:', Object.fromEntries(response.headers.entries()));
+
       let result: any = null;
       const text = await response.text();
+      console.log('[LOGIN] Response text:', text);
+      
       try {
         result = text ? JSON.parse(text) : null;
-      } catch {
-        // Non-JSON response
+      } catch (parseError) {
+        console.error('[LOGIN] JSON parse error:', parseError);
         result = null;
       }
 
       if (!response.ok) {
-        const msg = result?.message || `Login failed (${response.status})`;
-        throw new Error(msg);
+        const proxyTarget = response.headers.get('x-proxy-target');
+        const proxyBase = response.headers.get('x-proxy-backend-base');
+        const proxyError = response.headers.get('x-proxy-error');
+        
+        console.error('[LOGIN] Request failed:', {
+          status: response.status,
+          proxyTarget,
+          proxyBase,
+          proxyError,
+          result
+        });
+        
+        let errorMsg = result?.message || `Login failed (${response.status})`;
+        if (response.status === 500 && proxyBase) {
+          errorMsg += ` - Backend: ${proxyBase}`;
+        }
+        if (proxyError) {
+          errorMsg += ` - ${proxyError}`;
+        }
+        
+        throw new Error(errorMsg);
       }
 
-      if (result.success && result.data && result.data.token) {
-        // Store raw token; layout will prefix with Bearer when sending
+      if (result?.success && result?.data?.token) {
         const token: string = result.data.token;
-        localStorage.setItem('adminToken', token);
-        sessionStorage.setItem('adminToken', token);
-
-        // Use replace to avoid navigating back to login with back button
+        console.log('[LOGIN] Login successful, storing token');
+        
+        // Clear any existing tokens first
+        try {
+          localStorage.removeItem('adminToken');
+          sessionStorage.removeItem('adminToken');
+        } catch (e) {
+          console.warn('[LOGIN] Error clearing existing tokens:', e);
+        }
+        
+        // Store new token
+        try {
+          localStorage.setItem('adminToken', token);
+          sessionStorage.setItem('adminToken', token);
+        } catch (e) {
+          console.error('[LOGIN] Error storing token:', e);
+          throw new Error('Failed to store authentication token');
+        }
+        
         router.replace('/admin');
       } else {
-        setError(result?.message || 'Login failed');
+        console.error('[LOGIN] Invalid response format:', result);
+        setError(result?.message || 'Invalid login response');
       }
     } catch (err: any) {
+      console.error('[LOGIN] Login error:', err);
       setError(err?.message || 'Network error. Please try again.');
     } finally {
       setLoading(false);
