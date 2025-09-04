@@ -15,13 +15,57 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // No token/auth check needed anymore
-    setIsAuthenticated(true);
-    setAdminName('Admin');
-    setLoading(false);
-  }, [pathname]);
+    const checkAuth = async () => {
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
+        const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
+
+        // If no token and not already on login page -> redirect
+        if (!token) {
+          setIsAuthenticated(false);
+          setAdminName('');
+          setLoading(false);
+          if (pathname !== '/admin/login') router.replace('/admin/login');
+          return;
+        }
+
+        // Validate token by calling backend profile endpoint
+        const res = await fetch(`${API_BASE}/api/auth/profile`, {
+          headers: {
+            Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+          },
+          cache: 'no-store',
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          setIsAuthenticated(true);
+          setAdminName(json?.data?.name || 'Admin');
+          setLoading(false);
+        } else {
+          // Invalid token -> clear and redirect
+          localStorage.removeItem('adminToken');
+          setIsAuthenticated(false);
+          setAdminName('');
+          setLoading(false);
+          if (pathname !== '/admin/login') router.replace('/admin/login');
+        }
+      } catch (_) {
+        setIsAuthenticated(false);
+        setAdminName('');
+        setLoading(false);
+        if (pathname !== '/admin/login') router.replace('/admin/login');
+      }
+    };
+
+    checkAuth();
+    // re-check on path changes (nav) to ensure guard holds
+  }, [pathname, router]);
 
   const handleLogout = () => {
+    try {
+      localStorage.removeItem('adminToken');
+    } catch (_) {}
     setIsAuthenticated(false);
     router.replace('/admin/login');
   };
@@ -37,13 +81,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  if (!isAuthenticated && pathname !== '/admin/login') {
-    return null;
-  }
-
-  if (pathname === '/admin/login') {
+  // Allow access to the login route without header/nav wrapper
+  if (!isAuthenticated && pathname === '/admin/login') {
     return <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">{children}</div>;
   }
+
+  // If unauthenticated and not on login, we've already redirected; render nothing
+  if (!isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">

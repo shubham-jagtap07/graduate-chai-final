@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 
 export default function AdminLogin() {
   const [formData, setFormData] = useState({
-    email: 'admin@chaiwala.com',
-    password: 'admin123'
+    email: '',
+    password: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,52 +18,27 @@ export default function AdminLogin() {
     setError('');
 
     try {
-      console.groupCollapsed('[AdminLogin] submit');
-      console.log('Request URL:', 'https://gtbackend-1-pnnq.onrender.com/api/auth/login');
-      console.log('Request body:', { email: formData.email, passwordLen: formData.password?.length });
-      const response = await fetch('https://gtbackend-1-pnnq.onrender.com/api/auth/login', {
+      const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
-      console.log('HTTP status:', response.status, response.statusText);
       const result = await response.json();
-      console.log('Response JSON:', result);
 
       if (result.success && result.data && result.data.token) {
-        console.log('Login success:', {
-          hasToken: Boolean(result?.data?.token),
-          admin: result?.data?.admin || null,
-        });
-        
-        // Ensure token is properly formatted
-        const token = result.data.token.startsWith('Bearer ') ? result.data.token : `Bearer ${result.data.token}`;
-        const preview = token ? `${token.slice(0, 20)}...(${token.length})` : 'none';
-        console.log('Saving token to localStorage as "adminToken". preview:', preview);
-        
-        try {
-          // Store the token with Bearer prefix
-          localStorage.setItem('adminToken', token);
-          // Verify storage
-          const stored = localStorage.getItem('adminToken');
-          console.log('Token saved?', Boolean(stored), 'storedPreview:', stored ? `${stored.slice(0, 20)}...(${stored.length})` : null);
-          
-          // Also store in sessionStorage as backup
-          sessionStorage.setItem('adminToken', token);
-        } catch (e) {
-          console.error('Failed to write token to storage:', e);
-        }
-        console.groupEnd();
+        // Store raw token; layout will prefix with Bearer when sending
+        const token: string = result.data.token;
+        localStorage.setItem('adminToken', token);
+        sessionStorage.setItem('adminToken', token);
+
         // Use replace to avoid navigating back to login with back button
         router.replace('/admin');
       } else {
-        console.warn('Login failed:', result.message);
-        console.groupEnd();
         setError(result.message || 'Login failed');
       }
     } catch (err) {
-      console.error('Login request error:', err);
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
@@ -106,7 +81,7 @@ export default function AdminLogin() {
                 type="email"
                 required
                 autoComplete="username"
-                // value={formData.email}
+                value={formData.email}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
                 placeholder="xyz@chaiwala.com"
@@ -123,7 +98,7 @@ export default function AdminLogin() {
                 type="password"
                 required
                 autoComplete="current-password"
-                // value={formData.password}
+                value={formData.password}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
                 placeholder="Enter your password"
