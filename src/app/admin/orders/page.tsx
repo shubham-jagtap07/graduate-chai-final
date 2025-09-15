@@ -38,6 +38,8 @@ export default function OrdersPage() {
         setLoading(false);
       }
     };
+    fetchOrders();
+  }, []);
 
   const handleDeleteOne = async (id: string) => {
     const ok = window.confirm(`Delete order #${id}? This cannot be undone.`);
@@ -74,8 +76,6 @@ export default function OrdersPage() {
       setDeletingIds((prev) => ({ ...prev, [id]: false }));
     }
   };
-    fetchOrders();
-  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
