@@ -73,10 +73,21 @@ export default function Footer() {
               className="h-10 lg:h-12 w-auto mb-6"
             />
 
-            <p className="text-gray-400 text-base md:text-lg leading-relaxed mb-6">
-              Engage with the sweetest cup of tea in India. <br />
-              The Educated Taste!
-            </p>
+            <div className="text-gray-400 text-base md:text-lg leading-relaxed mb-6">
+              <p className="font-semibold text-gray-200 mb-2">
+                GRADUATE GULACHA CHAHA ANI LASSI PRIVATE LIMITED
+              </p>
+              <p className="mb-2">
+                SARVE NO 327/A/41, NEAR GHOGARE HOSPITAL, LOKRUCHI NAGAR, NEAR GHOGARE HOSPITAL, RAHATA,
+                Ahilyanagar, Maharashtra 423107
+              </p>
+              <p className="mb-1">
+                contact: <a className="hover:text-white" href="tel:9730636550">9730636550</a>
+              </p>
+              <p>
+                email: <a className="hover:text-white" href="mailto:support@graduate.in">support@graduate.in</a>
+              </p>
+            </div>
 
             <div className="flex space-x-4">
               {socialLinks.map(({ icon, href }, i) => (

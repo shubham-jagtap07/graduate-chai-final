@@ -20,9 +20,11 @@ export default function ClientLayout({
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
-    // show popup whenever route changes on non-admin pages
+    // show popup whenever route changes on non-admin pages,
+    // but do NOT show it on products pages
     const isAdmin = pathname?.startsWith("/admin");
-    setShowPopup(!isAdmin);
+    const isProducts = pathname?.startsWith("/products");
+    setShowPopup(!isAdmin && !isProducts);
   }, [pathname]);
 
   return (

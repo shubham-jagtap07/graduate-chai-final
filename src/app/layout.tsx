@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   },
   description:
     "Experience the authentic taste of premium Indian tea, crafted with tradition and served with innovation. Graduate Chai – The Educated Taste!",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
 };
 
 const merriweather = Merriweather({

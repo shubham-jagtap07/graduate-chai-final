@@ -21,6 +21,9 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
+  const [info, setInfo] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -35,6 +38,42 @@ export default function OrdersPage() {
         setLoading(false);
       }
     };
+
+  const handleDeleteOne = async (id: string) => {
+    const ok = window.confirm(`Delete order #${id}? This cannot be undone.`);
+    if (!ok) return;
+    setDeletingIds((prev) => ({ ...prev, [id]: true }));
+    setError(null);
+    setInfo(null);
+    try {
+      const res = await fetch(`/api/backend/orders/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        // Network/server error
+        throw new Error((json && json.message) || 'Failed to delete order');
+      }
+      if (json && typeof json.success !== 'undefined') {
+        if (json.success) {
+          // Success case per backend contract: { success: true, message: 'Order deleted' }
+          setOrders((prev) => prev.filter((o) => o.id !== id));
+          setInfo(json.message || 'Order deleted');
+        } else {
+          // Known failure cases from backend (Not found, Missing param)
+          setError(json.message || 'Failed to delete order');
+        }
+      } else {
+        // Fallback if response shape unexpected
+        setOrders((prev) => prev.filter((o) => o.id !== id));
+        setInfo('Order deleted');
+      }
+    } catch (e: any) {
+      setError(e?.message || 'Failed to delete order');
+    } finally {
+      setDeletingIds((prev) => ({ ...prev, [id]: false }));
+    }
+  };
     fetchOrders();
   }, []);
 
@@ -57,6 +96,49 @@ export default function OrdersPage() {
       : 'bg-orange-100 text-orange-800';
   };
 
+  const refetch = async () => {
+    setLoading(true);
+    setError(null);
+    setInfo(null);
+    try {
+      const res = await fetch(`/api/backend/orders`, { cache: 'no-store' });
+      const json = await res.json();
+      if (!res.ok || !json?.success) throw new Error(json?.message || 'Failed to load orders');
+      setOrders(Array.isArray(json.data) ? json.data : []);
+    } catch (e: any) {
+      setError(e?.message || 'Failed to load orders');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (orders.length === 0) return;
+    const ok = window.confirm('This will permanently delete ALL orders. Are you sure?');
+    if (!ok) return;
+    setDeleteLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/backend/orders`, {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ all: true }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || (json && json.success === false)) {
+        throw new Error((json && json.message) || 'Failed to delete orders');
+      }
+      // Optimistic clear
+      setOrders([]);
+      // Try refetch to reflect backend state
+      await refetch();
+    } catch (e: any) {
+      setError(e?.message || 'Failed to delete orders');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -70,6 +152,9 @@ export default function OrdersPage() {
       )}
       {error && (
         <div className="bg-red-50 text-red-700 rounded-xl border border-red-200 p-4">{error}</div>
+      )}
+      {info && (
+        <div className="bg-green-50 text-green-700 rounded-xl border border-green-200 p-4">{info}</div>
       )}
 
       {/* Orders Table */}
@@ -101,6 +186,9 @@ export default function OrdersPage() {
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -163,6 +251,21 @@ export default function OrdersPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {order.date}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteOne(order.id)}
+                      disabled={!!deletingIds[order.id]}
+                      className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm border transition
+                        ${deletingIds[order.id]
+                          ? 'bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed'
+                          : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'}
+                      `}
+                      title="Delete this order"
+                    >
+                      {deletingIds[order.id] ? 'Deleting…' : 'Delete'}
+                    </button>
                   </td>
                 </tr>
               ))}
