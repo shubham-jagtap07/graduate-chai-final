@@ -169,65 +169,10 @@ export default function Products() {
     });
   }, []);
 
-  // New flow: redirect to specific Razorpay Payment Page per product
+  // New flow: Use Easebuzz payment gateway
   const handleOrderNow = useCallback((product: ProductWithDiscount) => {
-    const productLinks: Record<string, { url: string; name: string }> = {
-      "Chai Sukh": {
-        url: "https://pages.razorpay.com/chai-sukh",
-        name: "chai-sukh",
-      },
-      "Jaggery Premix": {
-        url: "https://pages.razorpay.com/jaggery-premix",
-        name: "jaggery-premix",
-      },
-    };
-
-    const productInfo = productLinks[product.name];
-
-    if (productInfo) {
-      if (typeof window !== "undefined") {
-        // Create a unique reference ID for this transaction
-        const referenceId = `order_${Date.now()}_${Math.random()
-          .toString(36)
-          .substr(2, 9)}`;
-
-        // Build the callback URL with all necessary parameters
-        const baseUrl = window.location.origin;
-        const callbackUrl = new URL("/payment-status", baseUrl);
-
-        // Add parameters that Razorpay will send back
-        callbackUrl.searchParams.append("product", productInfo.name);
-        callbackUrl.searchParams.append("amount", product.price.toString());
-        callbackUrl.searchParams.append("reference_id", referenceId);
-
-        // Add parameters to identify the transaction source
-        callbackUrl.searchParams.append("source", "graduate_tea");
-        callbackUrl.searchParams.append("merchant_order_id", referenceId);
-
-        // Build the Razorpay URL with redirect back to our status page
-        const razorpayUrl = new URL(productInfo.url);
-        razorpayUrl.searchParams.append(
-          "redirect_to",
-          callbackUrl.toString(),
-        );
-
-        // Add callback URLs for both success and failure cases
-        razorpayUrl.searchParams.append(
-          "callback_url",
-          callbackUrl.toString(),
-        );
-        razorpayUrl.searchParams.append("cancel_url", callbackUrl.toString());
-
-        // eslint-disable-next-line no-console
-        console.log("Redirecting to Razorpay:", razorpayUrl.toString());
-
-        // Redirect to Razorpay payment page
-        window.location.href = razorpayUrl.toString();
-      }
-    } else {
-      // Fallback to old modal flow if product not found in mapping
-      openOrderForm(product);
-    }
+    // Open the order form modal for Easebuzz integration
+    openOrderForm(product);
   },
   [openOrderForm],
   );

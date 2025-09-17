@@ -129,7 +129,13 @@ export async function POST(req: Request) {
     await fs.writeFile(filePath, buffer);
 
     // Build absolute URL using the request origin to avoid confusion when clients run on a different domain/port
-    const origin = new URL(req.url).origin;
+    let origin;
+    try {
+      origin = req.url && req.url !== 'null' ? new URL(req.url).origin : null;
+    } catch (e) {
+      origin = null;
+    }
+    origin = origin || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const url = `${origin}/images/${fileName}`;
     return NextResponse.json({ success: true, url, fileName });
   } catch (err) {

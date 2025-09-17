@@ -1,8 +1,23 @@
 /** @type {import('next').NextConfig} */
+// Resolve safe environment values to avoid Invalid URL during SSR
+const RAW_APP_URL = process.env.NEXT_PUBLIC_APP_URL;
+const SAFE_APP_URL = !RAW_APP_URL || RAW_APP_URL === 'null' || RAW_APP_URL === 'undefined'
+  ? 'http://localhost:3000'
+  : RAW_APP_URL;
+
+const RAW_BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+const SAFE_BACKEND_URL = !RAW_BACKEND_URL || RAW_BACKEND_URL === 'null' || RAW_BACKEND_URL === 'undefined'
+  ? 'http://localhost:5001'
+  : RAW_BACKEND_URL;
+
 const nextConfig = {
   eslint: {
     // Disable ESLint during production builds
     ignoreDuringBuilds: true,
+  },
+  env: {
+    NEXT_PUBLIC_APP_URL: SAFE_APP_URL,
+    NEXT_PUBLIC_BACKEND_URL: SAFE_BACKEND_URL,
   },
   images: {
     remotePatterns: [
@@ -98,6 +113,14 @@ const nextConfig = {
         source: "/home",
         destination: "/",
         permanent: true,
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/backend/:path*",
+        destination: `${SAFE_BACKEND_URL}/api/:path*`,
       },
     ];
   },

@@ -168,10 +168,11 @@ export default function OrderForm({
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
     {},
   );
-  const [step, setStep] = useState<"addr" | "pay">("addr");
+  const [step, setStep] = useState<"addr" | "pay" | "payment_method">("addr");
   const [loading, setLoading] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [success, setSuccess] = useState(false);
+  const [showPaymentMethod, setShowPaymentMethod] = useState(false);
 
   const selectedProduct =
     variantList.find((c) => c.id === form.chaiVariant) ?? variantList[0];
@@ -222,49 +223,125 @@ export default function OrderForm({
     return !Object.keys(e).length;
   };
 
-  const submit = async (e: FormEvent) => {
+  const handlePlaceOrder = (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) return setStep("addr");
+    
+    // Show payment method selection
+    setShowPaymentMethod(true);
+  };
+
+  const handlePaymentMethodSelect = async (paymentMethod: 'COD' | 'Online') => {
     setLoading(true);
+    setShowPaymentMethod(false);
 
     try {
+      if (paymentMethod === 'COD') {
+        // For COD orders, use the old flow
+        const payload = {
+          name: form.name,
+          phone: form.phone,
+          street: form.street,
+          landmark: form.landmark,
+          city: form.city,
+          taluka: form.taluka,
+          district: form.district,
+          state: form.state,
+          pincode: form.pincode,
+          product,
+          image: image,
+          image2: image, // duplicate for now; can be replaced with another URL
+          weight: selectedProduct?.weight || weight,
+          price: currentPrice,
+          qty: form.qty,
+          payment: 'COD',
+          total: breakdown.total,
+        };
 
-      const payload = {
-        name: form.name,
-        phone: form.phone,
-        street: form.street,
-        landmark: form.landmark,
-        city: form.city,
-        taluka: form.taluka,
-        district: form.district,
-        state: form.state,
-        pincode: form.pincode,
-        product,
-        image: image,
-        image2: image, // duplicate for now; can be replaced with another URL
-        weight: selectedProduct?.weight || weight,
-        price: currentPrice,
-        qty: form.qty,
-        payment: form.payment,
-        total: breakdown.total,
-      };
+        const res = await fetch(`/api/backend/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
 
-      const res = await fetch(`/api/backend/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+        const data = await res.json();
+        if (!res.ok || !data?.success) {
+          throw new Error(data?.message || 'Failed to place order');
+        }
 
-      const data = await res.json();
-      if (!res.ok || !data?.success) {
-        throw new Error(data?.message || 'Failed to place order');
+        alert("🎉 Order Placed Successfully! We'll contact you within 24 hours.");
+        setSuccess(true);
+        setTimeout(() => {
+          onClose();
+        }, 2000);
+      } else {
+        // For online payments, use Easebuzz payment gateway
+        const paymentPayload = {
+          name: form.name,
+          phone: form.phone,
+          email: `${form.phone}@graduatechai.in`, // Generate email from phone
+          street: form.street,
+          landmark: form.landmark,
+          city: form.city,
+          taluka: form.taluka,
+          district: form.district,
+          state: form.state,
+          pincode: form.pincode,
+          product: product,
+          image: image,
+          image2: image,
+          weight: selectedProduct?.weight || weight,
+          price: currentPrice,
+          qty: form.qty,
+          special_instructions: '',
+        };
+
+        console.log('Payment payload being sent:', paymentPayload);
+        console.log('Making request to:', `/api/backend/payment/initiate`);
+
+        // Call through Next.js proxy so it works in all environments
+        const res = await fetch(`/api/backend/payment/initiate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(paymentPayload),
+        });
+
+        console.log('Response status:', res.status);
+        console.log('Response headers:', res.headers);
+
+        const data = await res.json();
+        console.log('Response data:', data);
+        
+        if (!res.ok || !data?.success) {
+          throw new Error(data?.message || 'Failed to initiate payment');
+        }
+
+        // Check if we have access key for hosted checkout or fallback to form submission
+        if (data.data.access_key) {
+          const paymentUrl = `${data.data.payment_url}/${data.data.access_key}`;
+          console.log('Redirecting to hosted checkout:', paymentUrl);
+          window.location.href = paymentUrl;
+        } else if (data.data.payment_params) {
+          // Fallback to form submission
+          console.log('Using form submission fallback');
+          const paymentForm = document.createElement('form');
+          paymentForm.method = 'POST';
+          paymentForm.action = data.data.payment_url;
+
+          Object.entries(data.data.payment_params).forEach(([key, value]) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value as string;
+            paymentForm.appendChild(input);
+          });
+
+          document.body.appendChild(paymentForm);
+          paymentForm.submit();
+        } else {
+          throw new Error('No valid payment method received from server');
+        }
       }
-
-      alert("🎉 Order Placed Successfully! We'll contact you within 24 hours.");
-      setSuccess(true);
-      setTimeout(() => {
-        onClose();
-      }, 2000);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("Order submission failed:", error);
@@ -417,8 +494,7 @@ export default function OrderForm({
 
           {/* Container wrapper for responsive max-width */}
           <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
-            <motion.form
-              onSubmit={submit}
+            <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -671,7 +747,8 @@ export default function OrderForm({
               {/* Footer */}
               <div className="px-3 sm:px-4 py-2 sm:py-3 border-t border-gray-200 dark:border-gray-700">
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handlePlaceOrder}
                   disabled={loading}
                   className={`w-full py-2.5 sm:py-3 rounded-lg font-bold text-white text-sm transition-all duration-200 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${amber.bg} flex items-center justify-center gap-2 min-h-[42px]`}
                 >
@@ -703,8 +780,52 @@ export default function OrderForm({
                   )}
                 </button>
               </div>
-            </motion.form>
+            </motion.div>
           </div>
+
+          {/* Payment Method Selection Modal */}
+          {showPaymentMethod && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="fixed inset-0 z-[130] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm"
+            >
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 text-center">
+                  Select Payment Method / पेमेंट पद्धत निवडा
+                </h3>
+                
+                <div className="space-y-3">
+                  <button
+                    onClick={() => handlePaymentMethodSelect('Online')}
+                    disabled={loading}
+                    className="w-full p-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                    <CreditCardIcon className="w-5 h-5" />
+                    <span>Online Payment / ऑनलाइन पेमेंट</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => handlePaymentMethodSelect('COD')}
+                    disabled={loading}
+                    className="w-full p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                    <HomeIcon className="w-5 h-5" />
+                    <span>Cash on Delivery / रोख पैसे</span>
+                  </button>
+                </div>
+                
+                <button
+                  onClick={() => setShowPaymentMethod(false)}
+                  disabled={loading}
+                  className="w-full mt-4 p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                >
+                  Cancel / रद्द करा
+                </button>
+              </div>
+            </motion.div>
+          )}
         </div>
       )}
     </AnimatePresence>

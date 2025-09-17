@@ -3,7 +3,16 @@ import { Merriweather } from "next/font/google";
 import "@/styles/globals.css";
 import ClientLayout from "@/components/layout/ClientLayout";
 
+// Resolve a safe app URL for metadata
+const RAW_APP_URL = process.env.NEXT_PUBLIC_APP_URL;
+const SAFE_APP_URL = !RAW_APP_URL || RAW_APP_URL === 'null' || RAW_APP_URL === 'undefined'
+  ? 'http://localhost:3000'
+  : RAW_APP_URL;
+
 export const metadata: Metadata = {
+  // Ensure Next.js can construct absolute URLs during SSR for icons, OG, etc.
+  // Avoids "Invalid URL" when metadataBase would otherwise be undefined/null
+  metadataBase: new URL(SAFE_APP_URL),
   title: {
     default: "Graduate Chai & Products – Premium Indian Tea",
     template: "%s | Graduate Chai & Products",
