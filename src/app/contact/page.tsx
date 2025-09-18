@@ -179,22 +179,44 @@ export default function ContactPage() {
     setStatus({ type: "loading", message: "Sending your message..." });
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch('/api/backend/inquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+          source: 'contact'
+        })
+      });
 
-      setStatus({
-        type: "success",
-        message:
-          "Thank you! Your message has been sent successfully. We'll get back to you within 24 hours.",
-      });
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        subject: "",
-        message: "",
-      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setStatus({
+          type: "success",
+          message:
+            "Thank you! Your message has been sent successfully. We'll get back to you within 24 hours.",
+        });
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          subject: "",
+          message: "",
+        });
+      } else {
+        setStatus({
+          type: "error",
+          message: result.message || "Failed to send your message. Please try again.",
+        });
+      }
     } catch (error) {
+      console.error('Error submitting contact form:', error);
       setStatus({
         type: "error",
         message:

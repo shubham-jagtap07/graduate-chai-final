@@ -7,6 +7,8 @@ interface DashboardStats {
   activeProducts: number;
   totalOrders: number;
   revenue: number;
+  totalInquiries: number;
+  newInquiries: number;
 }
 
 export default function AdminDashboard() {
@@ -14,7 +16,9 @@ export default function AdminDashboard() {
     totalProducts: 0,
     activeProducts: 0,
     totalOrders: 47,
-    revenue: 28450
+    revenue: 28450,
+    totalInquiries: 0,
+    newInquiries: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -59,6 +63,27 @@ export default function AdminDashboard() {
       } catch (_) {
         // silently ignore and keep fallback numbers
       }
+
+      // Try to get inquiries stats
+      try {
+        const token = localStorage.getItem('adminToken');
+        const inquiriesRes = await fetch(`/api/backend/inquiries`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (inquiriesRes.ok) {
+          const inquiriesJson = await inquiriesRes.json();
+          if (inquiriesJson?.success && Array.isArray(inquiriesJson.data)) {
+            const inquiries = inquiriesJson.data;
+            setStats(prev => ({
+              ...prev,
+              totalInquiries: inquiries.length,
+              newInquiries: inquiries.filter((i: any) => i.status === 'new').length
+            }));
+          }
+        }
+      } catch (_) {
+        // silently ignore and keep fallback numbers
+      }
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {
@@ -92,7 +117,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <StatCard
           title="Total Products"
           value={loading ? '...' : stats.totalProducts}
@@ -116,6 +141,18 @@ export default function AdminDashboard() {
           value={`₹${stats.revenue.toLocaleString()}`}
           icon="💰"
           color="text-purple-600"
+        />
+        <StatCard
+          title="Total Inquiries"
+          value={loading ? '...' : stats.totalInquiries}
+          icon="📧"
+          color="text-indigo-600"
+        />
+        <StatCard
+          title="New Inquiries"
+          value={loading ? '...' : stats.newInquiries}
+          icon="🆕"
+          color="text-red-600"
         />
       </div>
 
@@ -153,7 +190,7 @@ export default function AdminDashboard() {
           ⚡ Quick Actions
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <QuickActionCard
             title="Add New Product"
             description="Create a new tea product"
@@ -174,6 +211,13 @@ export default function AdminDashboard() {
             href="/admin/orders"
             icon="📋"
             color="bg-blue-500"
+          />
+          <QuickActionCard
+            title="View Inquiries"
+            description="Manage customer inquiries"
+            href="/admin/inquiries"
+            icon="📧"
+            color="bg-indigo-500"
           />
         </div>
       </div>

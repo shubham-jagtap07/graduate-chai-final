@@ -27,8 +27,8 @@ export default function PopupForm({ onClose }: PopupFormProps) {
     // Only phone is required per your earlier logic
     if (!data.phone.trim()) {
       next.phone = "Phone number is required.";
-    } else if (!/^[0-9]{10}$/.test(data.phone.trim())) {
-      next.phone = "Please enter a 10-digit number.";
+    } else if (!/^[0-9+\-\s()]{10,15}$/.test(data.phone.trim())) {
+      next.phone = "Please enter a valid phone number (10-15 digits).";
     }
 
     return next;
@@ -55,12 +55,44 @@ export default function PopupForm({ onClose }: PopupFormProps) {
 
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      // ✅ Do NOT auto-close
-      setSuccess(true);
-      setData({ name: "", phone: "", city: "", message: "" });
-    } catch {
+      console.log('Submitting inquiry data:', {
+        name: data.name.trim(),
+        phone: data.phone.trim(),
+        city: data.city.trim(),
+        message: data.message.trim(),
+        source: 'popup'
+      });
+
+      const response = await fetch('/api/backend/inquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: data.name.trim(),
+          phone: data.phone.trim(),
+          city: data.city.trim(),
+          message: data.message.trim(),
+          source: 'popup'
+        })
+      });
+
+      console.log('Response status:', response.status);
+      const result = await response.json();
+      console.log('Response data:', result);
+      
+      if (result.success) {
+        setSuccess(true);
+        setData({ name: "", phone: "", city: "", message: "" });
+      } else {
+        // Handle error - could show error message
+        console.error('Failed to submit inquiry:', result.message);
+        if (result.errors) {
+          console.error('Validation errors:', result.errors);
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting inquiry:', error);
       // You can surface an error toast here if needed
     } finally {
       setIsSubmitting(false);

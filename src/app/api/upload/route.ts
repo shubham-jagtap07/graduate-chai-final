@@ -7,12 +7,19 @@ export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   try {
+    console.log('=== UPLOAD DEBUG ===');
+    console.log('CLOUDINARY_URL exists:', !!process.env.CLOUDINARY_URL);
+    console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME);
+    console.log('CLOUDINARY_UPLOAD_FOLDER:', process.env.CLOUDINARY_UPLOAD_FOLDER);
+    
     const formData = await req.formData();
     const file = formData.get('file');
 
     if (!file || !(file instanceof File)) {
       return NextResponse.json({ success: false, message: 'No file uploaded' }, { status: 400 });
     }
+
+    console.log('File received:', file.name, 'Size:', file.size);
 
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET; // unsigned preset recommended
@@ -49,8 +56,12 @@ export async function POST(req: Request) {
         body.append('signature', signature);
         if (folder) body.append('folder', folder);
 
+        console.log('Uploading to Cloudinary (signed):', cloudUrl);
         const res = await fetch(cloudUrl, { method: 'POST', body });
         const json = await res.json();
+        console.log('Cloudinary response status:', res.status);
+        console.log('Cloudinary response:', json);
+        
         if (!res.ok) {
           console.error('Cloudinary (signed) upload error:', json);
           return NextResponse.json(

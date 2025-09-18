@@ -118,6 +118,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <NavLink href="/admin" label="Dashboard" />
             <NavLink href="/admin/products" label="Products" />
             <NavLink href="/admin/orders" label="Orders" />
+            <NavLink href="/admin/inquiries" label="Inquiries" />
           </div>
         </div>
       </nav>

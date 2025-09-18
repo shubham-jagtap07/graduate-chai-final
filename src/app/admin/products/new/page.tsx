@@ -16,7 +16,9 @@ export default function NewProductPage() {
     features: '',
     tags: '',
     stock_quantity: '',
-    is_popular: false
+    is_popular: false,
+    rating: '4.9',
+    reviews: '0'
   });
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -26,6 +28,14 @@ export default function NewProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (uploading) {
+      setMessage({ text: 'Please wait for the image to finish uploading', type: 'error' });
+      return;
+    }
+    if (!formData.image_url) {
+      setMessage({ text: 'Please upload a product image before submitting', type: 'error' });
+      return;
+    }
     setLoading(true);
     setMessage(null);
 
@@ -39,7 +49,9 @@ export default function NewProductPage() {
         original_price: formData.original_price ? parseFloat(formData.original_price) : parseFloat(formData.price),
         stock_quantity: parseInt(formData.stock_quantity),
         features: formData.features ? formData.features.split(',').map(f => f.trim()).filter(f => f) : [],
-        tags: formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(t => t) : []
+        tags: formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(t => t) : [],
+        rating: formData.rating ? Math.max(0, Math.min(5, parseFloat(formData.rating))) : 0,
+        reviews: formData.reviews ? Math.max(0, parseInt(formData.reviews)) : 0
       };
 
       const response = await fetch(`/api/backend/products`, {
@@ -59,7 +71,8 @@ export default function NewProductPage() {
           router.push('/admin/products');
         }, 2000);
       } else {
-        setMessage({ text: result.message || 'Failed to create product', type: 'error' });
+        const detail = result?.errors?.map((e:any)=>e.msg).join(', ');
+        setMessage({ text: `${result.message || 'Failed to create product'}${detail ? `: ${detail}` : ''}`, type: 'error' });
       }
     } catch (error) {
       setMessage({ text: 'Error creating product', type: 'error' });
@@ -114,6 +127,42 @@ export default function NewProductPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Add New Product</h1>
           <p className="text-gray-600 mt-2">Create a new tea product for your store</p>
+        </div>
+
+        {/* Rating and Reviews */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-2">
+              Rating (0-5)
+            </label>
+            <input
+              type="number"
+              id="rating"
+              name="rating"
+              min="0"
+              max="5"
+              step="0.1"
+              value={formData.rating}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+              placeholder="4.9"
+            />
+          </div>
+          <div>
+            <label htmlFor="reviews" className="block text-sm font-medium text-gray-700 mb-2">
+              Reviews Count
+            </label>
+            <input
+              type="number"
+              id="reviews"
+              name="reviews"
+              min="0"
+              value={formData.reviews}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+              placeholder="203"
+            />
+          </div>
         </div>
       </div>
 

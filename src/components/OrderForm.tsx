@@ -276,33 +276,73 @@ export default function OrderForm({
         }, 2000);
       } else {
         // For online payments, use Easebuzz payment gateway
+        // Create minimal payload first for payment gateway
+        const sanitizedProduct = product.replace(/[^a-zA-Z0-9 ]/g, '').trim();
         const paymentPayload = {
-          name: form.name,
-          phone: form.phone,
-          email: `${form.phone}@graduatechai.in`, // Generate email from phone
-          street: form.street,
-          landmark: form.landmark,
-          city: form.city,
-          taluka: form.taluka,
-          district: form.district,
-          state: form.state,
-          pincode: form.pincode,
-          product: product,
-          image: image,
-          image2: image,
-          weight: selectedProduct?.weight || weight,
+          // Essential customer details
+          firstname: form.name.trim().split(' ')[0] || 'Customer',
+          lastname: form.name.trim().split(' ').slice(1).join(' ') || '',
+          phone: form.phone.trim(),
+          email: `${form.phone.trim()}@graduatechai.in`,
+          
+          // Essential address details
+          address1: form.street.trim(),
+          city: form.city.trim(),
+          state: form.state.trim(),
+          country: 'India',
+          zipcode: form.pincode.trim(),
+          
+          // Essential product details - MOST CRITICAL
+          // Use a strict alphanumeric value and 2-decimal amount string
+          productinfo: 'Product',
+          amount: Number(breakdown.total).toFixed(2),
+          
+          // Backend processing fields
+          name: form.name.trim(),
+          address2: form.landmark.trim() || '',
+          pincode: form.pincode.trim(),
+          street: form.street.trim(),
+          landmark: form.landmark.trim(),
+          taluka: form.taluka.trim(),
+          district: form.district.trim(),
+          // Use sanitized product to avoid backend reconstructing invalid productinfo
+          product: sanitizedProduct,
+          product_name: sanitizedProduct,
+          image: image || '',
+          image2: image || '',
+          weight: selectedProduct?.weight || weight || '500g',
           price: currentPrice,
           qty: form.qty,
+          total: breakdown.total,
           special_instructions: '',
         };
 
-        console.log('Payment payload being sent:', paymentPayload);
+        // Validate critical fields
+        if (!paymentPayload.firstname || !paymentPayload.phone || !paymentPayload.pincode || !paymentPayload.amount) {
+          throw new Error('Missing required customer information. Please fill all fields.');
+        }
+
+        console.log('=== PAYMENT DEBUG INFO ===');
+        console.log('Product Name:', product);
+        console.log('ProductInfo Field:', paymentPayload.productinfo);
+        console.log('Amount Field:', paymentPayload.amount);
+        console.log('Amount Type:', typeof paymentPayload.amount);
+        console.log('ProductInfo Length:', paymentPayload.productinfo?.length);
+        console.log('ProductInfo Bytes:', new TextEncoder().encode(paymentPayload.productinfo));
+        console.log('Full Payment Payload:', JSON.stringify(paymentPayload, null, 2));
         console.log('Making request to:', `/api/backend/payment/initiate`);
+        
+        // Test if productinfo is being corrupted
+        const testPayload = { productinfo: 'Tea', amount: '225' };
+        console.log('Minimal Test Payload:', JSON.stringify(testPayload));
 
         // Call through Next.js proxy so it works in all environments
         const res = await fetch(`/api/backend/payment/initiate`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
           body: JSON.stringify(paymentPayload),
         });
 
@@ -310,10 +350,32 @@ export default function OrderForm({
         console.log('Response headers:', res.headers);
 
         const data = await res.json();
-        console.log('Response data:', data);
+        console.log('=== RESPONSE DEBUG ===');
+        console.log('Response Status:', res.status);
+        console.log('Response Data:', data);
         
-        if (!res.ok || !data?.success) {
-          throw new Error(data?.message || 'Failed to initiate payment');
+        if (!res.ok) {
+          console.error('HTTP Error:', res.status, res.statusText);
+          console.error('Response Body:', data);
+          throw new Error(`Payment request failed: ${res.status} ${res.statusText}`);
+        }
+        
+        if (!data?.success) {
+          console.error('Backend Error Details:', {
+            success: data?.success,
+            status: data?.status,
+            error_desc: data?.error_desc,
+            message: data?.message,
+            data: data?.data
+          });
+          
+          // If it's specifically a productinfo error, let's try a different approach
+          if (data?.error_desc?.includes('productinfo')) {
+            console.error('PRODUCTINFO VALIDATION FAILED');
+            console.error('Sent productinfo:', paymentPayload.productinfo);
+          }
+          
+          throw new Error(data?.message || data?.error_desc || 'Failed to initiate payment');
         }
 
         // Check if we have access key for hosted checkout or fallback to form submission
