@@ -282,43 +282,28 @@ export default function Mastermind() {
           ))}
         </div>
 
-        {/* --------------- CTA --------------- */}
+        {/* --------------- CTA (disabled as requested) --------------- */}
+        {/**
+         * CTA section with gradient background and buttons has been commented out intentionally.
+         * If you want it back, restore the block below from version control.
+         */}
+        {/*
         <div className="mt-16 xs:mt-18 sm:mt-20 md:mt-22 lg:mt-24 xl:mt-28 2xl:mt-32 3xl:mt-36 text-center">
           <div className="relative overflow-hidden rounded-2xl xs:rounded-3xl p-6 xs:p-7 sm:p-8 md:p-10 lg:p-12 xl:p-14 2xl:p-16 3xl:p-20 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 shadow-lg md:shadow-xl">
-            {/* decorative blobs */}
-            <div
-              aria-hidden
-              className="absolute inset-0 opacity-10 pointer-events-none"
-            >
+            <div aria-hidden className="absolute inset-0 opacity-10 pointer-events-none">
               <div className="absolute -top-6 -left-6 xs:-top-8 xs:-left-8 sm:-top-10 sm:-left-10 w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 bg-white rounded-full" />
               <div className="absolute -bottom-8 -right-8 xs:-bottom-10 xs:-right-10 sm:-bottom-12 sm:-right-12 w-20 h-20 xs:w-24 xs:h-24 sm:w-32 sm:h-32 bg-white rounded-full" />
               <div className="absolute top-1/2 left-1/2 w-12 h-12 xs:w-16 xs:h-16 sm:w-20 sm:h-20 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
             </div>
-
-            <h3 className="relative z-10 text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl 3xl:text-7xl font-black text-white drop-shadow-sm leading-tight">
-              Join Our Team
-            </h3>
-            <p className="relative z-10 mt-3 xs:mt-4 sm:mt-4 md:mt-5 text-sm xs:text-base sm:text-lg md:text-xl lg:text-xl xl:text-2xl 2xl:text-3xl 3xl:text-4xl text-amber-100 max-w-xs xs:max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto leading-relaxed">
-              We're always looking for passionate people to join our growing
-              family.
-            </p>
-
+            <h3 className="relative z-10 text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl 3xl:text-7xl font-black text-white drop-shadow-sm leading-tight">Join Our Team</h3>
+            <p className="relative z-10 mt-3 xs:mt-4 sm:mt-4 md:mt-5 text-sm xs:text-base sm:text-lg md:text-xl lg:text-xl xl:text-2xl 2xl:text-3xl 3xl:text-4xl text-amber-100 max-w-xs xs:max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto leading-relaxed">We're always looking for passionate people to join our growing family.</p>
             <div className="relative z-10 mt-5 xs:mt-6 sm:mt-7 md:mt-8 flex flex-col xs:flex-col sm:flex-row gap-3 xs:gap-4 justify-center items-center">
-              <button
-                onClick={handleViewOpenings}
-                className="w-full xs:w-full sm:w-auto px-5 xs:px-6 sm:px-7 md:px-8 lg:px-9 py-2.5 xs:py-3 sm:py-3 md:py-4 bg-white text-amber-600 rounded-full font-bold text-sm xs:text-sm sm:text-base md:text-base lg:text-lg hover:bg-amber-50 transition-colors shadow-lg md:shadow-xl"
-              >
-                View Openings
-              </button>
-              <button
-                onClick={handleLearnMore}
-                className="w-full xs:w-full sm:w-auto px-5 xs:px-6 sm:px-7 md:px-8 lg:px-9 py-2.5 xs:py-3 sm:py-3 md:py-4 border-2 border-white text-white rounded-full font-bold text-sm xs:text-sm sm:text-base md:text-base lg:text-lg hover:bg-white/10 transition-colors"
-              >
-                Learn More
-              </button>
+              <button onClick={handleViewOpenings} className="w-full xs:w-full sm:w-auto px-5 xs:px-6 sm:px-7 md:px-8 lg:px-9 py-2.5 xs:py-3 sm:py-3 md:py-4 bg-white text-amber-600 rounded-full font-bold text-sm xs:text-sm sm:text-base md:text-base lg:text-lg hover:bg-amber-50 transition-colors shadow-lg md:shadow-xl">View Openings</button>
+              <button onClick={handleLearnMore} className="w-full xs:w-full sm:w-auto px-5 xs:px-6 sm:px-7 md:px-8 lg:px-9 py-2.5 xs:py-3 sm:py-3 md:py-4 border-2 border-white text-white rounded-full font-bold text-sm xs:text-sm sm:text-base md:text-base lg:text-lg hover:bg-white/10 transition-colors">Learn More</button>
             </div>
           </div>
         </div>
+        */}
       </div>
     </section>
   );

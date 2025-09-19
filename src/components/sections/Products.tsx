@@ -475,9 +475,14 @@ export default function Products() {
                             ₹{product.original_price.toLocaleString()}
                           </span>
                         </div>
-                        <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
-                          Save ₹{product.savings.toLocaleString()}
-                        </span>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
+                            Save ₹{product.savings.toLocaleString()}
+                          </span>
+                          <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded-md">
+                            Cash on delivery 35 rs extra
+                          </span>
+                        </div>
                       </div>
                     </div>
 

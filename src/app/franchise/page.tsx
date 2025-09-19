@@ -127,7 +127,7 @@ export default function FranchiseForm() {
           {/* header */}
           <div className="text-center mb-4 sm:mb-6">
             <h1 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 font-serif">
-              Distributorship Enquiry
+            Franchise Enquiry
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-serif">
               We'll reach out within 24 hours.
@@ -190,7 +190,7 @@ export default function FranchiseForm() {
                 required
                 className="input-field text-sm sm:text-base"
               >
-                <option value="Distributorship">Distributorship</option>
+                <option value="Franchise">Franchise</option>
               </select>
             </div>
 
