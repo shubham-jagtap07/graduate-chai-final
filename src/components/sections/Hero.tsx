@@ -24,7 +24,7 @@ export default function Hero() {
   // Images
   const images = useMemo(
     () => [
-      "/images/team/28.webp",
+      "/images/team/31.webp",
       "/images/team/29.webp",
       "/images/team/30.webp",
     ],
