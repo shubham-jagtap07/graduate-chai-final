@@ -17,7 +17,7 @@ export default function FranchiseForm() {
     name: "",
     email: "",
     phone: "",
-    subject: "Franchise Opportunity",
+    subject: "Distributorship",
     message: "",
   });
   const [status, setStatus] = useState<"" | "sending" | "success" | "error">(
@@ -127,7 +127,7 @@ export default function FranchiseForm() {
           {/* header */}
           <div className="text-center mb-4 sm:mb-6">
             <h1 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 font-serif">
-              Franchise Enquiry
+              Distributorship Enquiry
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-serif">
               We'll reach out within 24 hours.
@@ -190,14 +190,7 @@ export default function FranchiseForm() {
                 required
                 className="input-field text-sm sm:text-base"
               >
-                <option value="">Select a subject</option>
-                <option value="General Inquiry">General Inquiry</option>
-                <option value="Product Information">Product Information</option>
-                <option value="Franchise Opportunity">Franchise Opportunity</option>
-                <option value="Order Support">Order Support</option>
-                <option value="Partnership">Partnership</option>
-                <option value="Feedback">Feedback</option>
-                <option value="Other">Other</option>
+                <option value="Distributorship">Distributorship</option>
               </select>
             </div>
 
