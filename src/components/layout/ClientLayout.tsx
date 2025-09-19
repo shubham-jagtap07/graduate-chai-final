@@ -9,7 +9,7 @@ import Footer from "@/components/layout/Footer";
 import FloatingActions from "@/components/FloatingActions";
 import StickyActions from "@/components/sections/StickyActions";
 import ThemeProvider from "@/components/ThemeProvider";
-import PopupForm from "@/components/PopupForm";
+// import PopupForm from "@/components/PopupForm"; // disabled globally per request
 
 export default function ClientLayout({
   children,
@@ -52,11 +52,12 @@ export default function ClientLayout({
         </div>
       </ThemeProvider>
 
-      {/* Popup Form */}
-      {showPopup && !pathname?.startsWith("/admin") && (
-        <PopupForm
-          onClose={() => setShowPopup(false)} // close only when user clicks close
-        />
+      {/* Popup Form disabled globally */}
+      {false && showPopup && !pathname?.startsWith("/admin") && (
+        <></>
+        // <PopupForm
+        //   onClose={() => setShowPopup(false)} // close only when user clicks close
+        // />
       )}
 
       {/* Google Analytics */}

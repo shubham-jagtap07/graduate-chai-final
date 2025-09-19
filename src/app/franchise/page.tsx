@@ -17,6 +17,7 @@ export default function FranchiseForm() {
     name: "",
     email: "",
     phone: "",
+    subject: "Franchise Opportunity",
     message: "",
   });
   const [status, setStatus] = useState<"" | "sending" | "success" | "error">(
@@ -37,7 +38,7 @@ export default function FranchiseForm() {
   ];
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,13 +46,30 @@ export default function FranchiseForm() {
     setIsLoading(true);
     setStatus("sending");
     try {
-      const res = await fetch("/api/send-franchise-mail", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      // Save to DB via centralized inquiries endpoint (used by Admin > Inquiries)
+      const res = await fetch('/api/backend/inquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          subject: form.subject.trim() || 'Franchise Opportunity',
+          message: form.message.trim(),
+          // Use same source as Contact to match existing DB constraints
+          source: 'contact'
+        })
       });
-      setStatus(res.ok ? "success" : "error");
-      if (res.ok) setForm({ name: "", email: "", phone: "", message: "" });
+
+      const result = await res.json();
+      if (result.success) {
+        setStatus('success');
+        setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+      } else {
+        setStatus('error');
+      }
     } catch {
       setStatus("error");
     } finally {
@@ -159,6 +177,29 @@ export default function FranchiseForm() {
                 </div>
               </div>
             ))}
+
+            {/* subject */}
+            <div className="space-y-1">
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 font-serif">
+                Subject
+              </label>
+              <select
+                name="subject"
+                value={form.subject}
+                onChange={handleChange}
+                required
+                className="input-field text-sm sm:text-base"
+              >
+                <option value="">Select a subject</option>
+                <option value="General Inquiry">General Inquiry</option>
+                <option value="Product Information">Product Information</option>
+                <option value="Franchise Opportunity">Franchise Opportunity</option>
+                <option value="Order Support">Order Support</option>
+                <option value="Partnership">Partnership</option>
+                <option value="Feedback">Feedback</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
 
             {/* message */}
             <div className="space-y-1">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import Link from "next/link";
@@ -14,6 +14,46 @@ export default function Network() {
     threshold: 0.1,
   });
   const [showQr, setShowQr] = useState(false);
+
+  // Local CountUp utility for follower stats
+  const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+  const formatWithSuffix = (value: number) => {
+    if (value >= 1_000_000) {
+      const num = value / 1_000_000;
+      return `${num % 1 === 0 ? num.toFixed(0) : num.toFixed(num < 10 ? 2 : 1)}M+`;
+    }
+    if (value >= 1_000) {
+      const num = value / 1_000;
+      return `${num % 1 === 0 ? num.toFixed(0) : num.toFixed(num < 10 ? 2 : 1)}K+`;
+    }
+    return `${Math.round(value)}+`;
+  };
+
+  function CountUp({ target, start = 1234, duration = 2000, startOn = true }: { target: number; start?: number; duration?: number; startOn?: boolean }) {
+    const [value, setValue] = useState(startOn ? start : target);
+
+    useEffect(() => {
+      if (!startOn) {
+        setValue(target);
+        return;
+      }
+      let raf: number;
+      const startTime = performance.now();
+      const step = (now: number) => {
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / duration);
+        const eased = easeOutCubic(t);
+        const current = Math.round(start + (target - start) * eased);
+        setValue(current);
+        if (t < 1) raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+      return () => cancelAnimationFrame(raf);
+    }, [startOn, target, start, duration]);
+
+    return <span>{formatWithSuffix(value)}</span>;
+  }
 
   return (
     <section
@@ -339,23 +379,10 @@ export default function Network() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.7 }}
             className="relative mt-16 w-full flex flex-col items-center justify-center py-16 px-4 md:px-8 rounded-3xl overflow-hidden"
-            style={{
-              backgroundImage: "url(/images/network.jpeg)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/50 to-black/60 z-0" />
+            
             <div className="relative z-10 flex flex-col items-center w-full text-center space-y-6">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-white leading-tight">
-                Let's Join hands together and you may be the next franchise
-                owner of{" "}
-                <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-                  Graduate Chai
-                </span>{" "}
-                in your town!
-              </h2>
-              <motion.button
+              {/* <motion.button
                 className="px-8 py-4 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:via-orange-700 hover:to-amber-800 text-white font-bold text-lg rounded-full shadow-2xl transition-all duration-300"
                 onClick={() => setShowQr(true)}
                 aria-label="Book a call to become a franchise owner"
@@ -363,7 +390,7 @@ export default function Network() {
                 whileTap={{ scale: 0.95 }}
               >
                 Book A Call
-              </motion.button>
+              </motion.button> */}
 
               {/* Enhanced QR Modal with Amber Theme */}
               <AnimatePresence>
@@ -387,11 +414,15 @@ export default function Network() {
                       >
                         &#10005;
                       </button>
-                      <div className="text-center mb-6 text-gray-800 font-bold text-lg">
+                      <a
+                        href="/contact"
+                        className="text-center mb-6 text-gray-800 font-bold text-lg underline decoration-amber-500 hover:text-amber-700"
+                        aria-label="Go to Contact page"
+                      >
                         Scan the QR code to
                         <br />
                         book a call.
-                      </div>
+                      </a>
                       <Image
                         src="/images/qr.png"
                         alt="Book a call QR code"
@@ -435,7 +466,7 @@ export default function Network() {
                   </svg>
                 </div>
                 <div className="text-3xl font-black text-gray-800 mb-2">
-                  221K+
+                  <CountUp target={221000} startOn={inView} />
                 </div>
                 <div className="text-gray-600 mb-3 text-center font-medium">
                   Instagram Followers
@@ -463,7 +494,7 @@ export default function Network() {
                   </svg>
                 </div>
                 <div className="text-3xl font-black text-gray-800 mb-2">
-                  9.1K+
+                  <CountUp target={9100} startOn={inView} />
                 </div>
                 <div className="text-gray-600 mb-3 text-center font-medium">
                   Facebook Followers
@@ -494,7 +525,7 @@ export default function Network() {
                   </svg>
                 </div>
                 <div className="text-3xl font-black text-gray-800 mb-2">
-                  2.38K+
+                  <CountUp target={2380} startOn={inView} />
                 </div>
                 <div className="text-gray-600 mb-3 text-center font-medium">
                   YouTube Subscribers
@@ -527,7 +558,7 @@ export default function Network() {
                     </svg>
                   </div>
                   <div className="text-3xl font-black text-gray-800 mb-2">
-                    50K+
+                    <CountUp target={50000} startOn={inView} />
                   </div>
                   <div className="text-gray-600 mb-3 text-center font-medium">
                     Tea Sold

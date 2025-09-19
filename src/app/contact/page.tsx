@@ -38,7 +38,7 @@ const contactInfo: ContactInfo[] = [
   {
     icon: PhoneIcon,
     title: "Phone Support",
-    details: ["+91 9730636550", "Mon-Sat 9AM-8PM"],
+    details: ["+91 9730636550", "+91 8669190691", "Mon-Sat 9AM-8PM"],
     link: "tel:+919730636550",
     color: "text-blue-600",
     bgColor: "bg-blue-50 border-blue-200",
@@ -61,7 +61,7 @@ const contactInfo: ContactInfo[] = [
   {
     icon: ClockIcon,
     title: "Business Hours",
-    details: ["Mon-Sat: 9AM-8PM", "Sun: 10AM-6PM"],
+    details: ["Mon-Sat: 9AM-7PM", "Sun: 10AM-6PM"],
     color: "text-orange-600",
     bgColor: "bg-orange-50 border-orange-200",
   },

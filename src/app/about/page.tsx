@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function AboutPage() {
   return (
@@ -86,13 +87,16 @@ export default function AboutPage() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="flex justify-center"
         >
-          <motion.button
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:via-orange-700 hover:to-amber-800 text-white font-bold py-3 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 font-serif text-lg"
-          >
-            Book A Call
-          </motion.button>
+          <Link href="/contact" passHref legacyBehavior>
+            <motion.a
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:via-orange-700 hover:to-amber-800 text-white font-bold py-3 px-8 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 font-serif text-lg"
+              aria-label="Go to Contact page"
+            >
+              Book A Call
+            </motion.a>
+          </Link>
         </motion.div>
       </motion.article>
     </section>
