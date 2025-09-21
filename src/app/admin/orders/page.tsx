@@ -15,6 +15,19 @@ type AdminOrder = {
   date: string;
   image1?: string | null;
   image2?: string | null;
+  // Optional extended fields that may come from the order payload
+  street?: string | null;
+  landmark?: string | null;
+  city?: string | null;
+  taluka?: string | null;
+  district?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  weight?: string | null;
+  price?: number | null; // unit price
+  qty?: number | null;   // some backends may use qty instead of quantity
+  address2?: string | null;
+  product_name?: string | null;
 };
 
 export default function OrdersPage() {
@@ -24,6 +37,7 @@ export default function OrdersPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
   const [info, setInfo] = useState<string | null>(null);
+  const [openDetails, setOpenDetails] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -187,6 +201,9 @@ export default function OrdersPage() {
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
                 </th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Details
+                </th>
                 <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
@@ -194,80 +211,178 @@ export default function OrdersPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      #{order.id}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {order.customer}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {order.mobile}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {order.product}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      Qty: {order.quantity}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div className="h-10 w-10 rounded-md bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
-                        {order.image1 ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={order.image1} alt={order.product} className="h-full w-full object-cover" />
-                        ) : (
-                          <span className="text-lg">🫖</span>
-                        )}
+                <>
+                  <tr key={order.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        #{order.id}
                       </div>
-                      <div className="h-10 w-10 rounded-md bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
-                        {order.image2 ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={order.image2} alt={order.product} className="h-full w-full object-cover" />
-                        ) : (
-                          <span className="text-lg">🫖</span>
-                        )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {order.customer}
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    ₹{order.total}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentColor(order.payment)}`}>
-                      {order.payment}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {order.date}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteOne(order.id)}
-                      disabled={!!deletingIds[order.id]}
-                      className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm border transition
-                        ${deletingIds[order.id]
-                          ? 'bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed'
-                          : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'}
-                      `}
-                      title="Delete this order"
-                    >
-                      {deletingIds[order.id] ? 'Deleting…' : 'Delete'}
-                    </button>
-                  </td>
-                </tr>
+                      <div className="text-sm text-gray-500">
+                        {order.mobile}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {order.product || order.product_name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Qty: {order.quantity ?? order.qty ?? 0}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <div className="h-10 w-10 rounded-md bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
+                          {order.image1 ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={order.image1} alt={order.product} className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="text-lg">🫖</span>
+                          )}
+                        </div>
+                        <div className="h-10 w-10 rounded-md bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
+                          {order.image2 ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={order.image2} alt={order.product} className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="text-lg">🫖</span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      ₹{order.total}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentColor(order.payment)}`}>
+                        {order.payment}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {order.date}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => setOpenDetails((prev) => ({ ...prev, [order.id]: !prev[order.id] }))}
+                        className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm border bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                        title="Toggle details"
+                      >
+                        {openDetails[order.id] ? 'Hide' : 'View'}
+                      </button>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteOne(order.id)}
+                        disabled={!!deletingIds[order.id]}
+                        className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm border transition
+                          ${deletingIds[order.id]
+                            ? 'bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed'
+                            : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'}
+                        `}
+                        title="Delete this order"
+                      >
+                        {deletingIds[order.id] ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </td>
+                  </tr>
+                  {openDetails[order.id] && (
+                    <tr>
+                      <td colSpan={10} className="px-6 pb-6 pt-0 bg-gray-50">
+                        <div className="mt-2 rounded-lg border border-gray-200 bg-white p-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                              <p className="text-xs text-gray-500">Customer</p>
+                              <p className="text-sm font-medium text-gray-900">{order.customer}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Mobile</p>
+                              <p className="text-sm font-medium text-gray-900">{order.mobile}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Product</p>
+                              <p className="text-sm font-medium text-gray-900">{order.product || order.product_name}</p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-gray-500">Unit Price</p>
+                              <p className="text-sm font-medium text-gray-900">{typeof order.price === 'number' ? `₹${order.price}` : '-'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Quantity</p>
+                              <p className="text-sm font-medium text-gray-900">{order.quantity ?? order.qty ?? '-'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Weight</p>
+                              <p className="text-sm font-medium text-gray-900">{order.weight || '-'}</p>
+                            </div>
+
+                            <div className="md:col-span-2 lg:col-span-3">
+                              <p className="text-xs text-gray-500">Full Address</p>
+                              <p className="text-sm font-medium text-gray-900 whitespace-pre-wrap">
+                                {(order.address && order.address.trim()) || [order.street, order.landmark, order.city, order.taluka, order.district, order.state, order.pincode]
+                                  .filter(Boolean)
+                                  .join(', ')}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-gray-500">Street</p>
+                              <p className="text-sm font-medium text-gray-900">{order.street || '-'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Landmark</p>
+                              <p className="text-sm font-medium text-gray-900">{order.landmark || order.address2 || '-'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">City</p>
+                              <p className="text-sm font-medium text-gray-900">{order.city || '-'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Taluka</p>
+                              <p className="text-sm font-medium text-gray-900">{order.taluka || '-'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">District</p>
+                              <p className="text-sm font-medium text-gray-900">{order.district || '-'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">State</p>
+                              <p className="text-sm font-medium text-gray-900">{order.state || '-'}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Pincode</p>
+                              <p className="text-sm font-medium text-gray-900">{order.pincode || '-'}</p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-gray-500">Payment</p>
+                              <p className="text-sm font-medium text-gray-900">{order.payment}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Status</p>
+                              <p className="text-sm font-medium text-gray-900">{order.status}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Order Date</p>
+                              <p className="text-sm font-medium text-gray-900">{order.date}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
             </tbody>
           </table>
